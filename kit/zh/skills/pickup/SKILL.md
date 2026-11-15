@@ -1,6 +1,6 @@
 ---
 name: pickup
-description: 新 session 接手 HANDOFF.md 里交接过来的工作。
+description: 新会话接手 HANDOFF.md 里交接过来的工作。
 disable-model-invocation: true
 ---
 
@@ -9,7 +9,7 @@ disable-model-invocation: true
 **硬性规则：用户确认前严格只读。用读取文件的工具看文件；只允许单独运行 `git status`、`git diff`、`git log`。不运行测试、脚本或项目代码。**
 
 1. 读项目根目录的 `HANDOFF.md`。不存在就告诉用户并停下。
-2. **核对，不盲信。** 交接文档可能出自一个状态不好的 session。用 `git status`、`git diff --stat`、`git log --oneline -15` 和实际读关键文件，核对"当前状态"一节。
+2. **核对，不盲信。** 交接文档可能出自一个状态不好的会话。用 `git status`、`git diff --stat`、`git log --oneline -15` 和实际读关键文件，核对"当前状态"一节。
 3. 回复用户，只包含：
    - 一句话复述真实目标
    - 核对结果：哪些和实际一致，哪些对不上

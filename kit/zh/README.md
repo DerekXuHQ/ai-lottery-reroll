@@ -1,8 +1,8 @@
-# AI Lottery · Reroll（Session 抽卡工具包）
+# AI Lottery · Reroll（会话抽卡工具包）
 
 ## 原理（一句话版）
 
-session 好坏由三层叠加决定：
+会话好坏由三层叠加决定：
 
 | 层 | 原因 | 对策 | 工具 |
 |---|---|---|---|
@@ -10,17 +10,17 @@ session 好坏由三层叠加决定：
 | 2 前 10 轮 | 模型早期锁定对你意图的解读，之后不再回头 | 测试通过后 `/rewind` 干净开局；早期发现跑偏立即回退 | `/rewind` |
 | 3 越往后 | 上下文积累自己的错误，自我污染；越长越糊 | 删除污染，不追加纠正；救不回来就换卡，工作靠文件延续 | `/rewind` `/compact` `/handoff` `/pickup` |
 
-核心：**工作成果在文件和 git 里，不在 session 里**。session 可以随时丢弃。
+核心：**工作成果在文件和 git 里，不在会话里**。会话可以随时丢弃。
 
 ## 内容
 
 | 文件 | 用途 | 什么时候用 |
 |---|---|---|
-| `skills/canary/` | `/canary`：开局测试 4 题 | 新 session 第一条消息 |
+| `skills/canary/` | `/canary`：开局测试 4 题 | 新会话第一条消息 |
 | `scoring-rubric.md` | 给开局测试打分（**只给你自己看**） | 看完 AI 的回答后 |
-| `skills/handoff/` | `/handoff`：把工作写成 `HANDOFF.md` | 旧 session 变傻时 |
-| `skills/pickup/` | `/pickup`：新 session 接手 | 新 session 第一条消息 |
-| `skills/relay-in/` | `/relay-in`：新 session 接收软件生成的接力包 | 新 session 第一条消息 |
+| `skills/handoff/` | `/handoff`：把工作写成 `HANDOFF.md` | 旧会话变傻时 |
+| `skills/pickup/` | `/pickup`：新会话接手 | 新会话第一条消息 |
+| `skills/relay-in/` | `/relay-in`：新会话接收软件生成的接力包 | 新会话第一条消息 |
 | `chat-prompts.md` | 开局测试、交接、接手的复制粘贴版 | ChatGPT、网页版 |
 
 ## 安装（Claude Code，在你自己的电脑上）
@@ -40,7 +40,7 @@ mkdir -p ~/.claude/skills && cp -Rn skills/* ~/.claude/skills/
 ## 流程
 
 ```
-开新 session
+开新会话
    ↓
 /canary  →  对照评分表打分
    ├─ ≤ 4 分：关掉重开
@@ -51,7 +51,7 @@ mkdir -p ~/.claude/skills && cp -Rn skills/* ~/.claude/skills/
       发现变傻？
          ├─ 刚开始傻：/rewind 回到傻之前，换个说法重发
          ├─ 上下文太长：/compact 只保留目标、已确认的决定、当前状态；丢弃被否定的方案
-         └─ 救不回来：/handoff → 核对 HANDOFF.md → 开新 session → /canary → /pickup
+         └─ 救不回来：/handoff → 核对 HANDOFF.md → 开新会话 → /canary → /pickup
 ```
 
 ## 变傻的信号

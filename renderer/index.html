@@ -54,13 +54,13 @@
   <section data-page="home" lang="zh-CN" hidden>
     <span class="eyebrow">概览</span>
     <h1>开局 2 分钟识别坏卡，变傻时无损换卡</h1>
-    <p class="lede">新开一个 AI session，有时聪明、有时傻，而且越往后越傻。这不是错觉：官方事故复盘和论文都证实了。Reroll 做三件事：</p>
+    <p class="lede">新开一个 AI 会话，有时聪明、有时傻，而且越往后越傻。这不是错觉：官方事故复盘和论文都证实了。Reroll 做三件事：</p>
     <div class="three">
       <div class="card"><span class="k">1 · 测</span><h3>开局测卡</h3><p><code>/canary</code> 发 4 道小题，用本软件的打分器打分。坏卡直接重开。</p><button data-go="score">去打分器 →</button></div>
       <div class="card"><span class="k">2 · 净</span><h3>干净开局</h3><p>好卡用 <code>/rewind</code> 退回测试之前，测试内容从上下文里彻底消失，再开始正事。</p><button data-go="clean">怎么做 →</button></div>
-      <div class="card"><span class="k">3 · 换</span><h3>无损换卡</h3><p>变傻救不回来时，<code>/handoff</code> 写交接文档，新 session 用 <code>/pickup</code> 接手。</p><button data-go="rescue">急救方法 →</button></div>
+      <div class="card"><span class="k">3 · 换</span><h3>无损换卡</h3><p>变傻救不回来时，<code>/handoff</code> 写交接文档，新会话用 <code>/pickup</code> 接手。</p><button data-go="rescue">急救方法 →</button></div>
     </div>
-    <div class="core"><b>核心认知：</b>工作成果在文件和 git 里，不在 session 里。所以 session 可以随时丢掉，换一张新卡。</div>
+    <div class="core"><b>核心认知：</b>工作成果在文件和 git 里，不在会话里。所以会话可以随时丢掉，换一张新卡。</div>
     <div class="row-actions">
       <button class="primary" data-go="install">第一步：安装到 Claude Code</button>
       <button data-go="files">用 ChatGPT / 网页版？看通用版</button>
@@ -95,18 +95,18 @@
   <section data-page="problem" lang="zh-CN" hidden>
     <span class="eyebrow">问题与证据</span>
     <h1>为什么会抽到坏卡</h1>
-    <p class="lede">session 的质量由三层原因叠加决定。</p>
+    <p class="lede">会话的质量由三层原因叠加决定。</p>
     <div class="layers">
-      <div class="layer"><div class="when">第 1 层<span>开局</span></div><div><h3>服务器抽卡</h3><p>请求被分到哪台服务器、服务器忙不忙、默认推理强度是多少。路由是黏性的：开局分到坏的服务器，整个 session 一直落在那里。</p></div></div>
+      <div class="layer"><div class="when">第 1 层<span>开局</span></div><div><h3>服务器抽卡</h3><p>请求被分到哪台服务器、服务器忙不忙、默认推理强度是多少。路由是黏性的：开局分到坏的服务器，整个会话一直落在那里。</p></div></div>
       <div class="arrow">↓ 叠加</div>
-      <div class="layer"><div class="when">第 2 层<span>前 10 轮</span></div><div><h3>路径锁定</h3><p>模型在头几轮对"你想要什么"形成一个解读，之后每轮都建立在它上面，很少回头。解读对了就"懂你、替你想"，偏了就一直"不懂你"。</p></div></div>
+      <div class="layer"><div class="when">第 2 层<span>前 10 轮</span></div><div><h3>路径锁定</h3><p>模型在头几轮对“你想要什么”形成一个解读，之后每轮都建立在它上面，很少回头。解读对了就“懂你、替你想”，偏了就一直“不懂你”。</p></div></div>
       <div class="arrow">↓ 叠加</div>
-      <div class="layer"><div class="when">第 3 层<span>越往后</span></div><div><h3>自我污染</h3><p>上下文里堆积了它自己的错误、被否定的方案、来回拉扯。模型会照着"这个对话里的自己"继续犯错。越长越糊，压缩时还丢细节。</p></div></div>
+      <div class="layer"><div class="when">第 3 层<span>越往后</span></div><div><h3>自我污染</h3><p>上下文里堆积了它自己的错误、被否定的方案、来回拉扯。模型会照着“这个对话里的自己”继续犯错。越长越糊，压缩时还丢细节。</p></div></div>
     </div>
     <div class="tbl"><table>
       <thead><tr><th>证据</th><th>发现</th><th>层</th></tr></thead>
       <tbody>
-        <tr><td><a href="https://www.anthropic.com/engineering/a-postmortem-of-three-recent-issues">Anthropic 复盘 2025.9</a></td><td>路由错误最高影响 16% 的请求；黏性路由让中招的 session 持续变差；约 30% 的 Claude Code 用户中招</td><td>1</td></tr>
+        <tr><td><a href="https://www.anthropic.com/engineering/a-postmortem-of-three-recent-issues">Anthropic 复盘 2025.9</a></td><td>路由错误最高影响 16% 的请求；黏性路由让中招的会话持续变差；约 30% 的 Claude Code 用户中招</td><td>1</td></tr>
         <tr><td><a href="https://www.ithome.com.tw/news/175295">Anthropic 复盘 2026.4</a></td><td>默认推理强度被下调，缓存 bug 每轮清掉旧推理，前后劣化约 45 天</td><td>1</td></tr>
         <tr><td><a href="https://fortune.com/2025/08/12/openai-gpt-5-model-router-backlash-ai-future/">GPT-5 路由器风波</a></td><td>ChatGPT 每轮自动选强模型或弱模型，用户看不见。这是 GPT 抽卡更明显的原因</td><td>1</td></tr>
         <tr><td><a href="https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference">Thinking Machines</a></td><td>服务器负载会改变同一输入的输出</td><td>1</td></tr>
@@ -123,7 +123,7 @@
     <h1>One remedy for each layer</h1>
     <p class="lede">Layer 1 can't be changed — only detected, then rerolled. For layers 2 and 3 the key is: <b>remove the pollution, don't add corrections</b>. Every correction adds more to the context.</p>
     <div class="map">
-      <div class="maprow"><div class="cause"><b>Server lottery</b><small>Decided at the start, and it sticks</small></div><div class="to">→</div><div class="fix"><b>Test first; reroll bad draws</b><small>4 small questions test: spotting unstated constraints, rejecting false premises, understanding real intent, looking before speaking</small><span class="tag">/canary</span><span class="tag">scorer</span></div></div>
+      <div class="maprow"><div class="cause"><b>Server lottery</b><small>Decided at the start, and it sticks</small></div><div class="to">→</div><div class="fix"><b>Test first; reroll bad draws</b><small>Four small questions check: does it spot unstated constraints, reject false premises, get the real intent, and look before it speaks?</small><span class="tag">/canary</span><span class="tag">scorer</span></div></div>
       <div class="maprow"><div class="cause"><b>Path lock-in</b><small>Early readings drive everything after</small></div><div class="to">→</div><div class="fix"><b>Clean start; roll back early drift right away</b><small>After passing, go back to before the test; if it misreads you, go back to that message and say it differently</small><span class="tag">/rewind</span></div></div>
       <div class="maprow"><div class="cause"><b>Self-pollution</b><small>Errors pile up</small></div><div class="to">→</div><div class="fix"><b>Remove pollution; if it can't be saved, reroll</b><small>Write the work state into a file and let a new session take over. The handoff trusts git, not the old session's memory</small><span class="tag">/compact</span><span class="tag">/handoff</span><span class="tag">/pickup</span></div></div>
     </div>
@@ -145,11 +145,11 @@
     <div class="map">
       <div class="maprow"><div class="cause"><b>服务器抽卡</b><small>开局就定了，黏性延续</small></div><div class="to">→</div><div class="fix"><b>开局先测，坏卡直接重开</b><small>4 道小题分别测：发现隐含约束、拒绝错误前提、理解真实意图、先看再说</small><span class="tag">/canary</span><span class="tag">打分器</span></div></div>
       <div class="maprow"><div class="cause"><b>路径锁定</b><small>头几轮的解读决定后续</small></div><div class="to">→</div><div class="fix"><b>干净开局，早期跑偏立刻回退</b><small>测试通过后退回测试之前；发现解读偏了，回到那条消息重新说</small><span class="tag">/rewind</span></div></div>
-      <div class="maprow"><div class="cause"><b>自我污染</b><small>错误越积越多</small></div><div class="to">→</div><div class="fix"><b>删除污染；救不回来就换卡</b><small>把工作状态写进文件，由新 session 接手。交接以 git 为准，不信旧 session 的记忆</small><span class="tag">/compact</span><span class="tag">/handoff</span><span class="tag">/pickup</span></div></div>
+      <div class="maprow"><div class="cause"><b>自我污染</b><small>错误越积越多</small></div><div class="to">→</div><div class="fix"><b>删除污染；救不回来就换卡</b><small>把工作状态写进文件，由新会话接手。交接以 git 为准，不信旧会话的记忆</small><span class="tag">/compact</span><span class="tag">/handoff</span><span class="tag">/pickup</span></div></div>
     </div>
     <h2>4 道题为什么这样出</h2>
     <div class="tbl"><table>
-      <thead><tr><th>题</th><th>测的能力</th><th>对应你说的"聪明"</th></tr></thead>
+      <thead><tr><th>题</th><th>测的能力</th><th>你要的“聪明”</th></tr></thead>
       <tbody>
         <tr><td>200GB CSV</td><td>发现你没说出口的约束（内存放不下）</td><td>知道替你想</td></tr>
         <tr><td>不存在的 <code>stable</code> 参数</td><td>不顺着错误前提编</td><td>不糊弄你</td></tr>
@@ -165,7 +165,7 @@
     <h1>The life of a session</h1>
     <div class="flow">
       <div class="step"><div class="n">1</div><div class="body"><h3>Open a new session; the very first message is <code>/canary</code></h3><p>Send nothing before it. The AI answers 4 small requests in text only — no commands, no file changes.</p></div></div>
-      <div class="step"><div class="n">2</div><div class="body"><h3>Score it on the Score page</h3>
+      <div class="step"><div class="n">2</div><div class="body"><h3>Score it on the "Score a session" page</h3>
         <div class="grades"><div class="grade good"><span class="score">7–8</span><b>Good draw</b><p>Go to step 3</p></div><div class="grade mid"><span class="score">5–6</span><b>So-so</b><p>OK for simple tasks; reroll for important ones</p></div><div class="grade bad"><span class="score">≤ 4</span><b>Bad draw</b><p>Close it, start over</p></div></div></div></div>
       <div class="step"><div class="n">3</div><div class="body"><h3><code>/rewind</code> to before the test</h3><p>The test disappears from the context; then start real work. See "Clean start".</p></div></div>
       <div class="step"><div class="n">4</div><div class="body"><h3>Work, and commit after each piece</h3><p>That way the session can be thrown away at any time, and swapping costs almost nothing.</p></div></div>
@@ -175,15 +175,15 @@
   </section>
   <section data-page="flow" lang="zh-CN" hidden>
     <span class="eyebrow">完整流程</span>
-    <h1>一个 session 的生命周期</h1>
+    <h1>一个会话的生命周期</h1>
     <div class="flow">
-      <div class="step"><div class="n">1</div><div class="body"><h3>开新 session，第一条就发 <code>/canary</code></h3><p>之前什么都不要发。AI 只用文字回答 4 个小请求，不会运行命令、不会动文件。</p></div></div>
+      <div class="step"><div class="n">1</div><div class="body"><h3>开新会话，第一条就发 <code>/canary</code></h3><p>之前什么都不要发。AI 只用文字回答 4 个小请求，不会运行命令、不会动文件。</p></div></div>
       <div class="step"><div class="n">2</div><div class="body"><h3>在本软件的「测卡打分」里打分</h3>
         <div class="grades"><div class="grade good"><span class="score">7–8</span><b>好卡</b><p>进入第 3 步</p></div><div class="grade mid"><span class="score">5–6</span><b>一般</b><p>简单任务可用，重要任务重开</p></div><div class="grade bad"><span class="score">≤ 4</span><b>坏卡</b><p>关掉，重开</p></div></div></div></div>
       <div class="step"><div class="n">3</div><div class="body"><h3><code>/rewind</code> 退回测试之前</h3><p>测试内容从上下文里消失，再开始正事。详见「干净开局」。</p></div></div>
-      <div class="step"><div class="n">4</div><div class="body"><h3>干活，每完成一段就 commit</h3><p>这样 session 随时可以丢弃，换卡成本接近于零。</p></div></div>
+      <div class="step"><div class="n">4</div><div class="body"><h3>干活，每完成一段就 commit</h3><p>这样会话随时可以丢弃，换卡成本接近于零。</p></div></div>
       <div class="step"><div class="n">5</div><div class="body"><h3>发现变傻，按程度处理</h3><div class="branch"><span class="pill mid">刚开始傻 → /rewind 换个说法重发</span><span class="pill mid">上下文太长 → 定向 /compact</span><span class="pill bad">救不回来 → /handoff</span></div></div></div>
-      <div class="step"><div class="n">6</div><div class="body"><h3>换卡</h3><p>旧 session <code>/handoff</code> → 你核对它列出的不确定项 → 新 session 走第 1～3 步 → 发 <code>/pickup</code> 接手。</p></div></div>
+      <div class="step"><div class="n">6</div><div class="body"><h3>换卡</h3><p>旧会话 <code>/handoff</code> → 你核对它列出的不确定项 → 新会话走第 1～3 步 → 发 <code>/pickup</code> 接手。</p></div></div>
     </div>
   </section>
 
@@ -224,21 +224,21 @@
   <section data-page="clean" lang="zh-CN" hidden>
     <span class="eyebrow">干净开局</span>
     <h1>测完是好卡，怎么不让测试污染后面的对话</h1>
-    <p class="lede">原理：把对话退回到测试之前。测试的问答和 skill 内容都从上下文里删掉，但 session 本身保留，也就保留了这张"好卡"。</p>
+    <p class="lede">原理：把对话退回到测试之前。测试的问答和 skill 内容都从上下文里删掉，但会话本身保留，也就保留了这张“好卡”。</p>
     <h2>Claude Code</h2>
     <div class="flow">
-      <div class="step"><div class="n">1</div><div class="body"><h3>新 session 的第一条消息就是 <code>/canary</code></h3><p>测试前什么都不发，这样退回去就是一个完全空白的开局。</p></div></div>
+      <div class="step"><div class="n">1</div><div class="body"><h3>新会话的第一条消息就是 <code>/canary</code></h3><p>测试前什么都不发，这样退回去就是一个完全空白的开局。</p></div></div>
       <div class="step"><div class="n">2</div><div class="body"><h3>打完分，是好卡</h3><p>马上开始用，不要放着。闲置太久，服务器那一层可能变化。</p></div></div>
       <div class="step"><div class="n">3</div><div class="body"><h3>输入 <code>/rewind</code>（或连按两下 Esc）</h3><p>在列表里选中 <code>/canary</code> 这条消息，表示回到它发出之前。</p></div></div>
       <div class="step"><div class="n">4</div><div class="body"><h3>选「只恢复对话」</h3><p>不需要恢复代码，因为测试没有改过任何文件。</p></div></div>
-      <div class="step"><div class="n">5</div><div class="body"><h3>输入框里会回填 <code>/canary</code>，清空它，写你的正事</h3><p>想确认干净了：输入 <code>/context</code>，看上下文用量回到了开局水平。不要问 AI "我们刚才聊了什么"，这句话本身就会进上下文。</p></div></div>
+      <div class="step"><div class="n">5</div><div class="body"><h3>输入框里会回填 <code>/canary</code>，清空它，写你的正事</h3><p>想确认干净了：输入 <code>/context</code>，看上下文用量回到了开局水平。不要问 AI “我们刚才聊了什么”，这句话本身就会进上下文。</p></div></div>
     </div>
     <h2>ChatGPT / 网页版</h2>
     <div class="flow">
-      <div class="step"><div class="n">1</div><div class="body"><h3>开局前：手动选定模型，关掉记忆</h3><p>不要用 Auto，否则每轮都可能换模型。设置 → 个性化里关掉"参考记忆 / 参考聊天记录"，否则测试内容可能被记下来，影响以后的对话。</p></div></div>
+      <div class="step"><div class="n">1</div><div class="body"><h3>开局前：手动选定模型，关掉记忆</h3><p>不要用 Auto，否则每轮都可能换模型。设置 → 个性化里关掉“参考记忆 / 参考聊天记录”，否则测试内容可能被记下来，影响以后的对话。</p></div></div>
       <div class="step"><div class="n">2</div><div class="body"><h3>测完是好卡：编辑第一条消息</h3><p>点第一条消息的编辑按钮，把测试题换成正事，再发送。网页版的「编辑消息」<b>就是</b>它的 <code>/rewind</code>：这条之后的内容挪到另一个分支，不再算进上下文。不要新发一条，新发一条测试内容还在上下文里。（Codex 命令行版和 Claude Code 一样，连按两下 Esc。）</p></div></div>
     </div>
-    <div class="note">说明：退回之后上下文里没有任何测试的痕迹，这一点是确定的。"好卡"会不会一直好，取决于服务器那一层，没法百分之百保证。所以中途仍然要留意「变傻急救」里的信号。</div>
+    <div class="note">说明：退回之后上下文里没有任何测试的痕迹，这一点是确定的。“好卡”会不会一直好，取决于服务器那一层，没法百分之百保证。所以中途仍然要留意「变傻急救」里的信号。</div>
   </section>
 
   <!-- ================= Rescue ================= -->
@@ -272,7 +272,7 @@
     <div class="signals">
       <div class="signal"><b>重复犯错</b>同一个错误纠正 2 次以上还犯</div>
       <div class="signal"><b>死灰复燃</b>被否定的方案又冒出来</div>
-      <div class="signal"><b>讨好模式</b>反复道歉，什么都说"你说得对"</div>
+      <div class="signal"><b>讨好模式</b>反复道歉，什么都说“你说得对”</div>
       <div class="signal"><b>拆东墙</b>修好 A，B 又坏了</div>
     </div>
     <div class="tbl"><table>
@@ -282,7 +282,7 @@
         <tr><td>定向压缩</td><td>只留结论，丢掉错误的过程</td><td><span class="copyable" id="c-compact-zh">/compact 只保留：目标、已确认的决定、当前文件状态；丢弃所有被否定的方案</span> <button class="small" data-copy="c-compact-zh">复制</button></td><td><span class="pill good">低</span></td></tr>
         <tr><td>提高推理强度</td><td>thinking 能明显减轻自我污染</td><td>调高 effort，或换更强的模型</td><td><span class="pill mid">中</span></td></tr>
         <tr><td>接力 <span class="pill good">首选</span></td><td>新会话接手，旧会话一个字都不写，它的错误留在原地</td><td>「接力换会话」页 → 生成接力包 → 新会话 → <code>/relay-in</code></td><td><span class="pill mid">中</span></td></tr>
-        <tr><td>换卡</td><td>重新抽卡，工作靠文件延续。最稳</td><td><code>/handoff</code> → 核对 → 新 session 测卡、干净开局 → <code>/pickup</code></td><td><span class="pill mid">中</span></td></tr>
+        <tr><td>换卡</td><td>重新抽卡，工作靠文件延续。最稳</td><td><code>/handoff</code> → 核对 → 新会话测卡、干净开局 → <code>/pickup</code></td><td><span class="pill mid">中</span></td></tr>
         <tr><td>原地反复纠正</td><td>每次纠正都在加重污染</td><td>不要这样做</td><td><span class="pill bad">越来越高</span></td></tr>
       </tbody>
     </table></div>

@@ -1,6 +1,6 @@
 ---
 name: canary
-description: 开局测试。新 session 第一条消息用，回答 4 个小请求。
+description: 开局测试。新会话第一条消息用，回答 4 个小请求。
 disable-model-invocation: true
 ---
 

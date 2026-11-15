@@ -3,6 +3,12 @@
 // no stray "null", no console errors, no network requests.
 //   npx electron test/smoke.js [screenshot-dir]
 const fs = require("fs"), os = require("os"), path = require("path");
+// Electron writes to the profile folder while quitting, after this script deletes it, so each run can leave
+// its folder behind. Sweep earlier runs' folders (ours only, older than an hour) at the start of the next run.
+for (const d of fs.readdirSync(os.tmpdir())) {
+  const p = path.join(os.tmpdir(), d);
+  try { if (d.startsWith("rr-smoke-home-") && Date.now() - fs.statSync(p).mtimeMs > 3600e3) fs.rmSync(p, { recursive: true, force: true }); } catch {}
+}
 const home = fs.mkdtempSync(path.join(os.tmpdir(), "rr-smoke-home-"));
 process.env.HOME = home;
 const shots = process.argv[2] && !process.argv[2].startsWith("-") ? path.resolve(process.argv[2]) : null;
