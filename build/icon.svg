@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4656e0"/>
+      <stop offset="1" stop-color="#232c86"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff8ea"/>
+      <stop offset="1" stop-color="#f6e4bf"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#0b0f3a" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+  <!-- macOS icon grid: 824x824 rounded square centered in 1024 -->
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#bg)"/>
+  <!-- back card -->
+  <g transform="rotate(-14 512 540)" opacity="0.55">
+    <rect x="352" y="300" width="300" height="420" rx="34" fill="#9aa6ff"/>
+  </g>
+  <!-- front card -->
+  <g transform="rotate(8 512 512)" filter="url(#shadow)">
+    <rect x="372" y="282" width="300" height="420" rx="34" fill="url(#card)" stroke="#c99a3c" stroke-width="10"/>
+    <rect x="398" y="308" width="248" height="368" rx="22" fill="none" stroke="#e2c27f" stroke-width="5"/>
+    <!-- reroll arrows -->
+    <g fill="none" stroke="#a8701a" stroke-width="30" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M 446 470 A 78 78 0 0 1 588 446"/>
+      <path d="M 598 514 A 78 78 0 0 1 456 538"/>
+    </g>
+    <g fill="#a8701a">
+      <path d="M 612 404 L 606 474 L 548 446 Z"/>
+      <path d="M 432 580 L 438 510 L 496 538 Z"/>
+    </g>
+  </g>
+</svg>

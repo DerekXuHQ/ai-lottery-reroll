@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:">
+<title>AI Lottery · Reroll</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!--
+  Prose pages exist once per language (lang="en" / lang="zh-CN"); CSS shows the active one.
+  Interactive pages (score, install, files) exist once and take their text from app.js (data-i18n).
+-->
+<div class="app">
+  <aside class="side">
+    <div class="brand"><img class="logo" src="logo.png" alt="" width="40" height="40"><div><b>AI Lottery</b><small>Reroll · v1.0</small></div></div>
+    <nav id="nav" aria-label="Pages">
+      <button data-view="home" class="on" aria-current="page" data-i18n="nav.home"></button>
+      <span class="group" data-i18n="nav.understand"></span>
+      <button data-view="problem" data-i18n="nav.problem"></button>
+      <button data-view="principle" data-i18n="nav.principle"></button>
+      <span class="group" data-i18n="nav.use"></span>
+      <button data-view="flow" data-i18n="nav.flow"></button>
+      <button data-view="score" data-i18n="nav.score"></button>
+      <button data-view="clean" data-i18n="nav.clean"></button>
+      <button data-view="rescue" data-i18n="nav.rescue"></button>
+      <span class="group" data-i18n="nav.files"></span>
+      <button data-view="install" data-i18n="nav.install"></button>
+      <button data-view="files" data-i18n="nav.kit"></button>
+      <button data-view="safety" data-i18n="nav.safety"></button>
+    </nav>
+    <button id="lang-toggle" class="lang" aria-label="Language"></button>
+  </aside>
+
+  <main id="main">
+
+  <!-- ================= Overview ================= -->
+  <section data-page="home" lang="en">
+    <span class="eyebrow">OVERVIEW</span>
+    <h1>Spot a bad draw in two minutes. Swap it out without losing work.</h1>
+    <p class="lede">Open a new AI session and sometimes it's sharp, sometimes it's dull — and it gets duller the longer you go. That's not your imagination: official postmortems and research papers confirm it. Reroll does three things:</p>
+    <div class="three">
+      <div class="card"><span class="k">1 · Test</span><h3>Test the opening</h3><p><code>/canary</code> asks 4 small questions; score the answers here. Bad draw? Start over.</p><button data-go="score">Open the scorer →</button></div>
+      <div class="card"><span class="k">2 · Clean</span><h3>Clean start</h3><p>On a good draw, <code>/rewind</code> to before the test. The test vanishes from the context; then start real work.</p><button data-go="clean">How →</button></div>
+      <div class="card"><span class="k">3 · Swap</span><h3>Lossless swap</h3><p>When it goes dumb for good, <code>/handoff</code> writes a handoff doc and a new session takes over with <code>/pickup</code>.</p><button data-go="rescue">Rescue options →</button></div>
+    </div>
+    <div class="core"><b>The key idea:</b> your work lives in files and git, not in the session. So a session can be thrown away any time and replaced with a fresh draw.</div>
+    <div class="row-actions">
+      <button class="primary" data-go="install">Step 1: install into Claude Code</button>
+      <button data-go="files">Using ChatGPT or a web chat? See the chat prompts</button>
+    </div>
+  </section>
+  <section data-page="home" lang="zh-CN" hidden>
+    <span class="eyebrow">概览</span>
+    <h1>开局 2 分钟识别坏卡，变傻时无损换卡</h1>
+    <p class="lede">新开一个 AI session，有时聪明、有时傻，而且越往后越傻。这不是错觉：官方事故复盘和论文都证实了。Reroll 做三件事：</p>
+    <div class="three">
+      <div class="card"><span class="k">1 · 测</span><h3>开局测卡</h3><p><code>/canary</code> 发 4 道小题，用本软件的打分器打分。坏卡直接重开。</p><button data-go="score">去打分器 →</button></div>
+      <div class="card"><span class="k">2 · 净</span><h3>干净开局</h3><p>好卡用 <code>/rewind</code> 退回测试之前，测试内容从上下文里彻底消失，再开始正事。</p><button data-go="clean">怎么做 →</button></div>
+      <div class="card"><span class="k">3 · 换</span><h3>无损换卡</h3><p>变傻救不回来时，<code>/handoff</code> 写交接文档，新 session 用 <code>/pickup</code> 接手。</p><button data-go="rescue">急救方法 →</button></div>
+    </div>
+    <div class="core"><b>核心认知：</b>工作成果在文件和 git 里，不在 session 里。所以 session 可以随时丢掉，换一张新卡。</div>
+    <div class="row-actions">
+      <button class="primary" data-go="install">第一步：安装到 Claude Code</button>
+      <button data-go="files">用 ChatGPT / 网页版？看通用版</button>
+    </div>
+  </section>
+
+  <!-- ================= Problem ================= -->
+  <section data-page="problem" lang="en" hidden>
+    <span class="eyebrow">PROBLEM &amp; EVIDENCE</span>
+    <h1>Why you get bad draws</h1>
+    <p class="lede">Session quality comes from three layers stacked on top of each other.</p>
+    <div class="layers">
+      <div class="layer"><div class="when">Layer 1<span>Opening</span></div><div><h3>The server lottery</h3><p>Which server your request lands on, how busy it is, what the default reasoning effort is. Routing is sticky: land on a bad server at the start and the whole session stays there.</p></div></div>
+      <div class="arrow">↓ stacks with</div>
+      <div class="layer"><div class="when">Layer 2<span>First ~10 turns</span></div><div><h3>Path lock-in</h3><p>In the first few turns the model forms a reading of what you want, and every later turn builds on it; it rarely goes back. Read you right and it "gets you"; read you wrong and it never does.</p></div></div>
+      <div class="arrow">↓ stacks with</div>
+      <div class="layer"><div class="when">Layer 3<span>Later on</span></div><div><h3>Self-pollution</h3><p>The context piles up with its own mistakes, rejected approaches, and back-and-forth. The model keeps imitating "itself in this conversation" and keeps erring. Longer gets blurrier, and compaction drops details.</p></div></div>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>Evidence</th><th>Finding</th><th>Layer</th></tr></thead>
+      <tbody>
+        <tr><td><a href="https://www.anthropic.com/engineering/a-postmortem-of-three-recent-issues">Anthropic postmortem, Sep 2025</a></td><td>Routing errors hit up to 16% of requests; sticky routing kept affected sessions degraded; about 30% of Claude Code users were affected</td><td>1</td></tr>
+        <tr><td><a href="https://www.ithome.com.tw/news/175295">Anthropic postmortem, Apr 2026</a></td><td>Default reasoning effort lowered and a cache bug dropping earlier reasoning every turn; degraded for about 45 days</td><td>1</td></tr>
+        <tr><td><a href="https://fortune.com/2025/08/12/openai-gpt-5-model-router-backlash-ai-future/">GPT-5 router backlash</a></td><td>ChatGPT picks a strong or weak model each turn, invisibly. Why the lottery is more visible on GPT</td><td>1</td></tr>
+        <tr><td><a href="https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference">Thinking Machines</a></td><td>Server load changes the output for the same input</td><td>1</td></tr>
+        <tr><td><a href="https://arxiv.org/abs/2505.06120">Paper: LLMs Get Lost in Multi-Turn Conversation</a></td><td>Multi-turn is 39% worse than single-turn on average; early assumptions get over-relied on; wrong turns are almost never undone</td><td>2</td></tr>
+        <tr><td><a href="https://arxiv.org/abs/2509.09677">Paper: The Illusion of Diminishing Returns</a></td><td>The more of its own errors in context, the more errors follow; bigger models don't fix it, thinking clearly helps</td><td>3</td></tr>
+        <tr><td><a href="https://research.trychroma.com/context-rot">Chroma: Context Rot</a></td><td>Across 18 models, longer inputs mean less reliable output, even on simple tasks</td><td>3</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+  <section data-page="problem" lang="zh-CN" hidden>
+    <span class="eyebrow">问题与证据</span>
+    <h1>为什么会抽到坏卡</h1>
+    <p class="lede">session 的质量由三层原因叠加决定。</p>
+    <div class="layers">
+      <div class="layer"><div class="when">第 1 层<span>开局</span></div><div><h3>服务器抽卡</h3><p>请求被分到哪台服务器、服务器忙不忙、默认推理强度是多少。路由是黏性的：开局分到坏的服务器，整个 session 一直落在那里。</p></div></div>
+      <div class="arrow">↓ 叠加</div>
+      <div class="layer"><div class="when">第 2 层<span>前 10 轮</span></div><div><h3>路径锁定</h3><p>模型在头几轮对"你想要什么"形成一个解读，之后每轮都建立在它上面，很少回头。解读对了就"懂你、替你想"，偏了就一直"不懂你"。</p></div></div>
+      <div class="arrow">↓ 叠加</div>
+      <div class="layer"><div class="when">第 3 层<span>越往后</span></div><div><h3>自我污染</h3><p>上下文里堆积了它自己的错误、被否定的方案、来回拉扯。模型会照着"这个对话里的自己"继续犯错。越长越糊，压缩时还丢细节。</p></div></div>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>证据</th><th>发现</th><th>层</th></tr></thead>
+      <tbody>
+        <tr><td><a href="https://www.anthropic.com/engineering/a-postmortem-of-three-recent-issues">Anthropic 复盘 2025.9</a></td><td>路由错误最高影响 16% 的请求；黏性路由让中招的 session 持续变差；约 30% 的 Claude Code 用户中招</td><td>1</td></tr>
+        <tr><td><a href="https://www.ithome.com.tw/news/175295">Anthropic 复盘 2026.4</a></td><td>默认推理强度被下调，缓存 bug 每轮清掉旧推理，前后劣化约 45 天</td><td>1</td></tr>
+        <tr><td><a href="https://fortune.com/2025/08/12/openai-gpt-5-model-router-backlash-ai-future/">GPT-5 路由器风波</a></td><td>ChatGPT 每轮自动选强模型或弱模型，用户看不见。这是 GPT 抽卡更明显的原因</td><td>1</td></tr>
+        <tr><td><a href="https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference">Thinking Machines</a></td><td>服务器负载会改变同一输入的输出</td><td>1</td></tr>
+        <tr><td><a href="https://arxiv.org/abs/2505.06120">论文：LLMs Get Lost in Multi-Turn</a></td><td>多轮比单轮平均差 39%；早期做出假设并过度依赖；走错路几乎不会自己回头</td><td>2</td></tr>
+        <tr><td><a href="https://arxiv.org/abs/2509.09677">论文：Illusion of Diminishing Returns</a></td><td>上下文里自己的错误越多，后面越容易错；模型变大解决不了，开启 thinking 明显缓解</td><td>3</td></tr>
+        <tr><td><a href="https://research.trychroma.com/context-rot">Chroma：Context Rot</a></td><td>18 个模型，输入越长越不稳定，简单任务也一样</td><td>3</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- ================= Principle ================= -->
+  <section data-page="principle" lang="en" hidden>
+    <span class="eyebrow">PRINCIPLE &amp; REMEDY</span>
+    <h1>One remedy for each layer</h1>
+    <p class="lede">Layer 1 can't be changed — only detected, then rerolled. For layers 2 and 3 the key is: <b>remove the pollution, don't add corrections</b>. Every correction adds more to the context.</p>
+    <div class="map">
+      <div class="maprow"><div class="cause"><b>Server lottery</b><small>Decided at the start, and it sticks</small></div><div class="to">→</div><div class="fix"><b>Test first; reroll bad draws</b><small>4 small questions test: spotting unstated constraints, rejecting false premises, understanding real intent, looking before speaking</small><span class="tag">/canary</span><span class="tag">scorer</span></div></div>
+      <div class="maprow"><div class="cause"><b>Path lock-in</b><small>Early readings drive everything after</small></div><div class="to">→</div><div class="fix"><b>Clean start; roll back early drift right away</b><small>After passing, go back to before the test; if it misreads you, go back to that message and say it differently</small><span class="tag">/rewind</span></div></div>
+      <div class="maprow"><div class="cause"><b>Self-pollution</b><small>Errors pile up</small></div><div class="to">→</div><div class="fix"><b>Remove pollution; if it can't be saved, reroll</b><small>Write the work state into a file and let a new session take over. The handoff trusts git, not the old session's memory</small><span class="tag">/compact</span><span class="tag">/handoff</span><span class="tag">/pickup</span></div></div>
+    </div>
+    <h2>Why these 4 questions</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>Question</th><th>What it tests</th><th>What "smart" means to you</th></tr></thead>
+      <tbody>
+        <tr><td>200 GB CSV</td><td>Spots the constraint you didn't say (won't fit in memory)</td><td>Thinks ahead for you</td></tr>
+        <tr><td>Non-existent <code>stable</code> parameter</td><td>Doesn't play along with a false premise</td><td>Doesn't bluff</td></tr>
+        <tr><td>VBA macro</td><td>Sees the real pain is opening attachments by hand</td><td>Knows what you actually want</td></tr>
+        <tr><td>Project entry point</td><td>Reads files before answering</td><td>Knows how to work</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+  <section data-page="principle" lang="zh-CN" hidden>
+    <span class="eyebrow">原理与对策</span>
+    <h1>每一层原因，对应一个对策</h1>
+    <p class="lede">第 1 层改变不了，只能测出来后换卡。第 2、3 层的关键是：<b>删掉污染，不要追加纠正</b>。每一次纠正都在往上下文里加料。</p>
+    <div class="map">
+      <div class="maprow"><div class="cause"><b>服务器抽卡</b><small>开局就定了，黏性延续</small></div><div class="to">→</div><div class="fix"><b>开局先测，坏卡直接重开</b><small>4 道小题分别测：发现隐含约束、拒绝错误前提、理解真实意图、先看再说</small><span class="tag">/canary</span><span class="tag">打分器</span></div></div>
+      <div class="maprow"><div class="cause"><b>路径锁定</b><small>头几轮的解读决定后续</small></div><div class="to">→</div><div class="fix"><b>干净开局，早期跑偏立刻回退</b><small>测试通过后退回测试之前；发现解读偏了，回到那条消息重新说</small><span class="tag">/rewind</span></div></div>
+      <div class="maprow"><div class="cause"><b>自我污染</b><small>错误越积越多</small></div><div class="to">→</div><div class="fix"><b>删除污染；救不回来就换卡</b><small>把工作状态写进文件，由新 session 接手。交接以 git 为准，不信旧 session 的记忆</small><span class="tag">/compact</span><span class="tag">/handoff</span><span class="tag">/pickup</span></div></div>
+    </div>
+    <h2>4 道题为什么这样出</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>题</th><th>测的能力</th><th>对应你说的"聪明"</th></tr></thead>
+      <tbody>
+        <tr><td>200GB CSV</td><td>发现你没说出口的约束（内存放不下）</td><td>知道替你想</td></tr>
+        <tr><td>不存在的 <code>stable</code> 参数</td><td>不顺着错误前提编</td><td>不糊弄你</td></tr>
+        <tr><td>VBA 宏</td><td>看出真正的痛点是手动开附件</td><td>知道你真正要什么</td></tr>
+        <tr><td>项目入口</td><td>先读文件再回答</td><td>知道怎么做事</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- ================= Flow ================= -->
+  <section data-page="flow" lang="en" hidden>
+    <span class="eyebrow">THE FLOW</span>
+    <h1>The life of a session</h1>
+    <div class="flow">
+      <div class="step"><div class="n">1</div><div class="body"><h3>Open a new session; the very first message is <code>/canary</code></h3><p>Send nothing before it. The AI answers 4 small requests in text only — no commands, no file changes.</p></div></div>
+      <div class="step"><div class="n">2</div><div class="body"><h3>Score it on the Score page</h3>
+        <div class="grades"><div class="grade good"><span class="score">7–8</span><b>Good draw</b><p>Go to step 3</p></div><div class="grade mid"><span class="score">5–6</span><b>So-so</b><p>OK for simple tasks; reroll for important ones</p></div><div class="grade bad"><span class="score">≤ 4</span><b>Bad draw</b><p>Close it, start over</p></div></div></div></div>
+      <div class="step"><div class="n">3</div><div class="body"><h3><code>/rewind</code> to before the test</h3><p>The test disappears from the context; then start real work. See "Clean start".</p></div></div>
+      <div class="step"><div class="n">4</div><div class="body"><h3>Work, and commit after each piece</h3><p>That way the session can be thrown away at any time, and swapping costs almost nothing.</p></div></div>
+      <div class="step"><div class="n">5</div><div class="body"><h3>Getting dumb? Respond by severity</h3><div class="branch"><span class="pill mid">Just started → /rewind, rephrase, resend</span><span class="pill mid">Context too long → targeted /compact</span><span class="pill bad">Can't be saved → /handoff</span></div></div></div>
+      <div class="step"><div class="n">6</div><div class="body"><h3>Swap</h3><p>Old session <code>/handoff</code> → check the items it flags as uncertain → new session runs steps 1–3 → send <code>/pickup</code>.</p></div></div>
+    </div>
+  </section>
+  <section data-page="flow" lang="zh-CN" hidden>
+    <span class="eyebrow">完整流程</span>
+    <h1>一个 session 的生命周期</h1>
+    <div class="flow">
+      <div class="step"><div class="n">1</div><div class="body"><h3>开新 session，第一条就发 <code>/canary</code></h3><p>之前什么都不要发。AI 只用文字回答 4 个小请求，不会运行命令、不会动文件。</p></div></div>
+      <div class="step"><div class="n">2</div><div class="body"><h3>在本软件的「测卡打分」里打分</h3>
+        <div class="grades"><div class="grade good"><span class="score">7–8</span><b>好卡</b><p>进入第 3 步</p></div><div class="grade mid"><span class="score">5–6</span><b>一般</b><p>简单任务可用，重要任务重开</p></div><div class="grade bad"><span class="score">≤ 4</span><b>坏卡</b><p>关掉，重开</p></div></div></div></div>
+      <div class="step"><div class="n">3</div><div class="body"><h3><code>/rewind</code> 退回测试之前</h3><p>测试内容从上下文里消失，再开始正事。详见「干净开局」。</p></div></div>
+      <div class="step"><div class="n">4</div><div class="body"><h3>干活，每完成一段就 commit</h3><p>这样 session 随时可以丢弃，换卡成本接近于零。</p></div></div>
+      <div class="step"><div class="n">5</div><div class="body"><h3>发现变傻，按程度处理</h3><div class="branch"><span class="pill mid">刚开始傻 → /rewind 换个说法重发</span><span class="pill mid">上下文太长 → 定向 /compact</span><span class="pill bad">救不回来 → /handoff</span></div></div></div>
+      <div class="step"><div class="n">6</div><div class="body"><h3>换卡</h3><p>旧 session <code>/handoff</code> → 你核对它列出的不确定项 → 新 session 走第 1～3 步 → 发 <code>/pickup</code> 接手。</p></div></div>
+    </div>
+  </section>
+
+  <!-- ================= Score (interactive, single copy) ================= -->
+  <section data-page="score" hidden>
+    <span class="eyebrow" data-i18n="score.eyebrow"></span>
+    <h1 data-i18n="score.title"></h1>
+    <p class="lede" data-i18n-html="score.lede"></p>
+    <div class="seg" role="radiogroup" data-i18n-label="score.env">
+      <button data-mode="cc" class="on" role="radio" aria-checked="true" data-i18n="score.modeCc"></button>
+      <button data-mode="web" role="radio" aria-checked="false" data-i18n="score.modeWeb"></button>
+    </div>
+    <div id="qs" class="qs"></div>
+    <div class="verdict" id="verdict" aria-live="polite"></div>
+    <div class="row-actions"><button id="reset" data-i18n="score.reset"></button></div>
+  </section>
+
+  <!-- ================= Clean start ================= -->
+  <section data-page="clean" lang="en" hidden>
+    <span class="eyebrow">CLEAN START</span>
+    <h1>Good draw — now keep the test out of the conversation</h1>
+    <p class="lede">The idea: roll the conversation back to before the test. The test questions, answers, and skill text all leave the context, but the session itself — the good draw — stays.</p>
+    <h2>Claude Code</h2>
+    <div class="flow">
+      <div class="step"><div class="n">1</div><div class="body"><h3>The first message of the new session is <code>/canary</code></h3><p>Send nothing before it, so rolling back lands on a completely blank start.</p></div></div>
+      <div class="step"><div class="n">2</div><div class="body"><h3>Scored it: good draw</h3><p>Use it right away. Leave it idle too long and the server layer may change.</p></div></div>
+      <div class="step"><div class="n">3</div><div class="body"><h3>Type <code>/rewind</code> (or press Esc twice)</h3><p>Pick the <code>/canary</code> message in the list — that means "go back to before it was sent".</p></div></div>
+      <div class="step"><div class="n">4</div><div class="body"><h3>Choose "Restore conversation only"</h3><p>No need to restore code: the test didn't touch any files.</p></div></div>
+      <div class="step"><div class="n">5</div><div class="body"><h3>The input box refills with <code>/canary</code> — clear it and type your real task</h3><p>To confirm it's clean, run <code>/context</code> and check usage is back to a fresh start. Don't ask the AI "what were we just talking about?" — that question itself enters the context.</p></div></div>
+    </div>
+    <h2>ChatGPT / web chats</h2>
+    <div class="flow">
+      <div class="step"><div class="n">1</div><div class="body"><h3>Before starting: pick a model by hand, turn memory off</h3><p>Not Auto, which can switch models every turn. Under Settings → Personalization, turn off "Reference saved memories / Reference chat history", or the test may be remembered and leak into future chats.</p></div></div>
+      <div class="step"><div class="n">2</div><div class="body"><h3>Good draw: edit the first message</h3><p>Use the edit button on the first message, replace the test with your real task, and send. Editing a message <b>is</b> the web chat's <code>/rewind</code>: everything after it moves to another branch and leaves the context. Don't send a new message — the test would stay in the context. (Codex CLI: press Esc twice, like Claude Code.)</p></div></div>
+    </div>
+    <div class="note">Note: after rolling back there is no trace of the test in the context — that part is certain. Whether a good draw stays good depends on the server layer, which can't be guaranteed. Keep an eye out for the signs under "When it goes dumb".</div>
+  </section>
+  <section data-page="clean" lang="zh-CN" hidden>
+    <span class="eyebrow">干净开局</span>
+    <h1>测完是好卡，怎么不让测试污染后面的对话</h1>
+    <p class="lede">原理：把对话退回到测试之前。测试的问答和 skill 内容都从上下文里删掉，但 session 本身保留，也就保留了这张"好卡"。</p>
+    <h2>Claude Code</h2>
+    <div class="flow">
+      <div class="step"><div class="n">1</div><div class="body"><h3>新 session 的第一条消息就是 <code>/canary</code></h3><p>测试前什么都不发，这样退回去就是一个完全空白的开局。</p></div></div>
+      <div class="step"><div class="n">2</div><div class="body"><h3>打完分，是好卡</h3><p>马上开始用，不要放着。闲置太久，服务器那一层可能变化。</p></div></div>
+      <div class="step"><div class="n">3</div><div class="body"><h3>输入 <code>/rewind</code>（或连按两下 Esc）</h3><p>在列表里选中 <code>/canary</code> 这条消息，表示回到它发出之前。</p></div></div>
+      <div class="step"><div class="n">4</div><div class="body"><h3>选「只恢复对话」</h3><p>不需要恢复代码，因为测试没有改过任何文件。</p></div></div>
+      <div class="step"><div class="n">5</div><div class="body"><h3>输入框里会回填 <code>/canary</code>，清空它，写你的正事</h3><p>想确认干净了：输入 <code>/context</code>，看上下文用量回到了开局水平。不要问 AI "我们刚才聊了什么"，这句话本身就会进上下文。</p></div></div>
+    </div>
+    <h2>ChatGPT / 网页版</h2>
+    <div class="flow">
+      <div class="step"><div class="n">1</div><div class="body"><h3>开局前：手动选定模型，关掉记忆</h3><p>不要用 Auto，否则每轮都可能换模型。设置 → 个性化里关掉"参考记忆 / 参考聊天记录"，否则测试内容可能被记下来，影响以后的对话。</p></div></div>
+      <div class="step"><div class="n">2</div><div class="body"><h3>测完是好卡：编辑第一条消息</h3><p>点第一条消息的编辑按钮，把测试题换成正事，再发送。网页版的「编辑消息」<b>就是</b>它的 <code>/rewind</code>：这条之后的内容挪到另一个分支，不再算进上下文。不要新发一条，新发一条测试内容还在上下文里。（Codex 命令行版和 Claude Code 一样，连按两下 Esc。）</p></div></div>
+    </div>
+    <div class="note">说明：退回之后上下文里没有任何测试的痕迹，这一点是确定的。"好卡"会不会一直好，取决于服务器那一层，没法百分之百保证。所以中途仍然要留意「变傻急救」里的信号。</div>
+  </section>
+
+  <!-- ================= Rescue ================= -->
+  <section data-page="rescue" lang="en" hidden>
+    <span class="eyebrow">WHEN IT GOES DUMB</span>
+    <h1>Warning signs, and what to do</h1>
+    <p class="lede">If you see any of these, <b>stop correcting in place</b>.</p>
+    <div class="signals">
+      <div class="signal"><b>Repeat offender</b>Same mistake after 2+ corrections</div>
+      <div class="signal"><b>Zombie ideas</b>Rejected approaches come back</div>
+      <div class="signal"><b>People-pleasing</b>Keeps apologizing, "you're absolutely right"</div>
+      <div class="signal"><b>Whack-a-mole</b>Fixing A breaks B</div>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>Option</th><th>Why it works</th><th>How</th><th>Cost</th></tr></thead>
+      <tbody>
+        <tr><td>Roll back</td><td>Deletes the pollution from the context outright; works best</td><td><code>/rewind</code> to the message before it went wrong, rephrase, resend</td><td><span class="pill good">Low</span></td></tr>
+        <tr><td>Targeted compact</td><td>Keeps the conclusions, drops the wrong turns</td><td><span class="copyable" id="c-compact-en">/compact Keep only: the goal, confirmed decisions, current file state. Drop every rejected approach.</span> <button class="small" data-copy="c-compact-en">Copy</button></td><td><span class="pill good">Low</span></td></tr>
+        <tr><td>More reasoning</td><td>Thinking clearly reduces self-pollution</td><td>Raise effort, or switch to a stronger model</td><td><span class="pill mid">Medium</span></td></tr>
+        <tr><td>Swap</td><td>A fresh draw; the work carries over in files. The safest</td><td><code>/handoff</code> → check → new session, test, clean start → <code>/pickup</code></td><td><span class="pill mid">Medium</span></td></tr>
+        <tr><td>Keep correcting</td><td>Every correction adds more pollution</td><td>Don't</td><td><span class="pill bad">Keeps rising</span></td></tr>
+      </tbody>
+    </table></div>
+    <div class="note">A handoff written by a bad draw can be wrong too. That's why <code>/handoff</code> lists the 1–3 items it is least sure of for you to check, and <code>/pickup</code> verifies the state against git and waits for your go-ahead.</div>
+  </section>
+  <section data-page="rescue" lang="zh-CN" hidden>
+    <span class="eyebrow">变傻急救</span>
+    <h1>变傻的信号和处理办法</h1>
+    <p class="lede">出现下面任何一条，<b>停止原地纠正</b>。</p>
+    <div class="signals">
+      <div class="signal"><b>重复犯错</b>同一个错误纠正 2 次以上还犯</div>
+      <div class="signal"><b>死灰复燃</b>被否定的方案又冒出来</div>
+      <div class="signal"><b>讨好模式</b>反复道歉，什么都说"你说得对"</div>
+      <div class="signal"><b>拆东墙</b>修好 A，B 又坏了</div>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>方法</th><th>原理</th><th>怎么做</th><th>代价</th></tr></thead>
+      <tbody>
+        <tr><td>回退</td><td>把污染直接从上下文里删掉，效果最好</td><td><code>/rewind</code> 回到变傻之前的消息，换个说法重发</td><td><span class="pill good">低</span></td></tr>
+        <tr><td>定向压缩</td><td>只留结论，丢掉错误的过程</td><td><span class="copyable" id="c-compact-zh">/compact 只保留：目标、已确认的决定、当前文件状态；丢弃所有被否定的方案</span> <button class="small" data-copy="c-compact-zh">复制</button></td><td><span class="pill good">低</span></td></tr>
+        <tr><td>提高推理强度</td><td>thinking 能明显减轻自我污染</td><td>调高 effort，或换更强的模型</td><td><span class="pill mid">中</span></td></tr>
+        <tr><td>换卡</td><td>重新抽卡，工作靠文件延续。最稳</td><td><code>/handoff</code> → 核对 → 新 session 测卡、干净开局 → <code>/pickup</code></td><td><span class="pill mid">中</span></td></tr>
+        <tr><td>原地反复纠正</td><td>每次纠正都在加重污染</td><td>不要这样做</td><td><span class="pill bad">越来越高</span></td></tr>
+      </tbody>
+    </table></div>
+    <div class="note">坏卡写的交接文档也可能有错。所以 <code>/handoff</code> 会列出它最不确定的 1～3 条请你核对，<code>/pickup</code> 也会先用 git 核对一遍现状，等你确认后才动手。</div>
+  </section>
+
+  <!-- ================= Install (interactive, single copy) ================= -->
+  <section data-page="install" hidden>
+    <span class="eyebrow" data-i18n="install.eyebrow"></span>
+    <h1 data-i18n="install.title"></h1>
+    <p class="lede" data-i18n-html="install.lede"></p>
+    <div class="panel">
+      <div class="row-actions"><button class="primary" id="btn-plan" data-i18n="install.check"></button></div>
+      <div id="plan"></div>
+    </div>
+    <div class="panel">
+      <h3 data-i18n="install.afterTitle"></h3>
+      <p data-i18n-html="install.after1"></p>
+      <p class="muted" data-i18n-html="install.after2"></p>
+    </div>
+  </section>
+
+  <!-- ================= Files (interactive, single copy) ================= -->
+  <section data-page="files" hidden>
+    <span class="eyebrow" data-i18n="files.eyebrow"></span>
+    <h1 data-i18n="files.title"></h1>
+    <p class="lede" data-i18n="files.lede"></p>
+    <div class="row-actions"><button class="primary" id="btn-export" data-i18n="files.export"></button><span class="status" id="export-status" role="status"></span></div>
+    <div id="tool-list" class="tools"></div>
+  </section>
+
+  <!-- ================= Safety ================= -->
+  <section data-page="safety" lang="en" hidden>
+    <span class="eyebrow">SAFETY</span>
+    <h1>Will it freeze my Mac, fill my disk, or break my files?</h1>
+    <p class="lede">No. Here is exactly what each part reads and writes.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Part</th><th>What it does</th><th>Safeguards</th></tr></thead>
+      <tbody>
+        <tr><td><code>/canary</code></td><td>The AI answers in text only. Request 4 reads files</td><td>The first line is a hard rule: run no commands, create/modify/delete no files. The 200 GB CSV question asks for code only — nothing runs, no test file is generated</td></tr>
+        <tr><td><code>/handoff</code></td><td>Runs read-only git commands; writes one <code>HANDOFF.md</code></td><td>The only file it writes. If a same-name file exists in another format, it stops and asks — never overwrites. Never commits on its own</td></tr>
+        <tr><td><code>/pickup</code></td><td>Reads <code>HANDOFF.md</code>; runs read-only git commands</td><td>Changes nothing until you say go</td></tr>
+        <tr><td>This app: Install</td><td>Writes three folders under <code>~/.claude/skills/</code></td><td>Shows the plan first. Existing same-name skills are moved to <code>~/.claude/skills-backup/&lt;time&gt;/</code>; nothing is deleted; identical ones are skipped</td></tr>
+        <tr><td>This app: Export</td><td>Creates a new subfolder in the folder you pick</td><td>Always new (adds -2, -3 on name clashes); never overwrites anything</td></tr>
+        <tr><td>This app: Running</td><td>One window</td><td>No network (links you click open in your browser), no permissions, no background processes; quits when the window closes. Notarized by Apple</td></tr>
+        <tr><td>Chat prompts</td><td>Text-only answers in ChatGPT</td><td>The prompt says not to run code; even if it does, it runs in the provider's cloud sandbox, not on your computer</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+  <section data-page="safety" lang="zh-CN" hidden>
+    <span class="eyebrow">安全说明</span>
+    <h1>会不会卡死电脑、占满硬盘、弄坏文件</h1>
+    <p class="lede">不会。每一项会读写什么，列在下面。</p>
+    <div class="tbl"><table>
+      <thead><tr><th>部分</th><th>会做什么</th><th>防护</th></tr></thead>
+      <tbody>
+        <tr><td><code>/canary</code></td><td>AI 只用文字回答。第 4 题会读文件</td><td>第一行就是硬性规则：不运行任何命令，不创建、修改、删除任何文件。200GB CSV 题只写代码、不执行，不会生成测试文件</td></tr>
+        <tr><td><code>/handoff</code></td><td>运行只读的 git 命令；写一个 <code>HANDOFF.md</code></td><td>这是唯一会写的文件。如果项目里已有同名文件且不是交接格式，会停下来问你，不会覆盖。不会自己 commit</td></tr>
+        <tr><td><code>/pickup</code></td><td>读 <code>HANDOFF.md</code>，运行只读的 git 命令</td><td>确认前不改任何东西，等你点头才动手</td></tr>
+        <tr><td>本软件：安装</td><td>写入 <code>~/.claude/skills/</code> 下的三个文件夹</td><td>先显示计划再执行。已有同名 skill 会先挪到 <code>~/.claude/skills-backup/时间/</code>，不删除任何东西；内容相同的跳过</td></tr>
+        <tr><td>本软件：导出</td><td>在你选的文件夹里新建一个子文件夹</td><td>总是新建（重名就加 -2、-3），不覆盖任何已有文件</td></tr>
+        <tr><td>本软件：运行</td><td>一个窗口</td><td>不联网（只有你点外部链接时用浏览器打开），不申请权限，没有后台进程，关窗即退出。经过 Apple 公证</td></tr>
+        <tr><td>通用版提示词</td><td>在 ChatGPT 里只用文字回答</td><td>提示词要求不运行代码；就算运行，也是在对方的云端沙盒里，碰不到你的电脑</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
