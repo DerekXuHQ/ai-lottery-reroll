@@ -50,7 +50,22 @@ app.on("browser-window-created", (_e, win) => {
     const js = (code) => wc.executeJavaScript(code);
     const shot = async (name) => { if (shots) { await sleep(250); fs.writeFileSync(path.join(shots, name + ".png"), (await win.capturePage()).toPNG()); } };
     const visibleText = () => js(`[...document.querySelectorAll('main [data-page]')].filter(p => p.offsetParent !== null).map(p => p.innerText).join('\\n')`);
+    // At launch, in either saved language, Overview is open and selected without any click.
+    const launchCheck = async (lang) => {
+      const n = await js(`[...document.querySelectorAll('[data-page="home"]')].filter(p => p.offsetParent !== null && p.getBoundingClientRect().height > 100).length`);
+      const on = await js(`document.querySelector('#nav button.on')?.dataset.view || ''`);
+      if (n !== 1 || on !== "home") problems.push(`${lang}: at launch Overview shows ${n} sections, selected nav "${on}"`);
+      await shot(`${lang}-launch`);
+    };
     try {
+      await launchCheck("en");
+      await js(`localStorage.setItem("lang", "zh")`);
+      await new Promise((r) => { wc.once("did-finish-load", r); wc.reload(); });
+      await sleep(200);
+      await launchCheck("zh");
+      await js(`localStorage.setItem("lang", "en")`);
+      await new Promise((r) => { wc.once("did-finish-load", r); wc.reload(); });
+      await sleep(200);
       for (const lang of ["en", "zh"]) {
         if (lang === "zh") { await js(`document.querySelector('#lang-toggle').click()`); await sleep(100); }
         const htmlLang = await js(`document.documentElement.lang`);

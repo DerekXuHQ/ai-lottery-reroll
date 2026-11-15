@@ -481,3 +481,5 @@ $$(".tbl table").forEach((tb) => {
 });
 applyLang();
 setMode("cc");
+// Open on Overview in whichever language was saved (the static HTML only un-hides the English page).
+show("home");
