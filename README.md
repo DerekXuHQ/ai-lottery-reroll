@@ -1,4 +1,6 @@
-<p align="center"><img src="build/icon.png" width="128" alt="AI Lottery · Reroll icon"></p>
+<p align="center"><img src="docs/images/hero.jpg" width="100%" alt="A fan of gold playing cards on deep indigo; the glowing center card shows a reroll symbol"></p>
+
+<p align="center"><img src="build/icon.png" width="96" alt="AI Lottery · Reroll icon"></p>
 
 <h1 align="center">AI Lottery · Reroll</h1>
 
@@ -9,6 +11,8 @@
 ---
 
 ## Why
+
+<p align="center"><img src="docs/images/why.jpg" width="80%" alt="Three cards: one cracked, one fading, one fresh and glowing as a hand reaches for it"></p>
 
 Open a new AI session — Claude Code, ChatGPT, anything — and sometimes it's sharp, sometimes it's dull, and it gets duller the longer you go. Three causes stack on top of each other:
 
@@ -38,6 +42,8 @@ From [Releases](../../releases/latest):
 - Not sure which Mac you have:  → About This Mac → "Chip" says Apple M… or Intel.
 
 ## What's inside
+
+<p align="center"><img src="docs/images/relay.jpg" width="80%" alt="One hand passes a glowing card to another; pages and a branching git line sit behind it"></p>
 
 - **Why it happens** — the three layers, the evidence, the remedies
 - **Scorer** — pick a score for each answer to `/canary`; get good / so-so / bad
