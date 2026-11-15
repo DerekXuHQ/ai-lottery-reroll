@@ -19,13 +19,13 @@ assert.ok(!/[一-鿿]/.test(Object.values(en).join("")), "English kit must not c
 
 // 1. fresh install
 let plan = ops.installPlan(KIT, home);
-assert.deepStrictEqual(plan.items.map((i) => i.action), ["new", "new", "new"]);
+assert.deepStrictEqual(plan.items.map((i) => i.action), ops.SKILLS.map(() => "new"));
 ops.install(KIT, home);
 for (const s of ops.SKILLS) assert.ok(fs.existsSync(path.join(skills, s, "SKILL.md")));
 
 // 2. reinstall = all same, nothing written
 plan = ops.installPlan(KIT, home);
-assert.deepStrictEqual(plan.items.map((i) => i.action), ["same", "same", "same"]);
+assert.deepStrictEqual(plan.items.map((i) => i.action), ops.SKILLS.map(() => "same"));
 const r0 = ops.install(KIT, home);
 assert.ok(r0.items.every((i) => !i.backupTo));
 assert.ok(!fs.existsSync(path.join(home, ".claude/skills-backup")), "no-op reinstall must not create backups");

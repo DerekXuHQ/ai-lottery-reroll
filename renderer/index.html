@@ -13,7 +13,7 @@
 -->
 <div class="app">
   <aside class="side">
-    <div class="brand"><img class="logo" src="logo.png" alt="" width="40" height="40"><div><b>AI Lottery</b><small>Reroll · v1.0</small></div></div>
+    <div class="brand"><img class="logo" src="logo.png" alt="" width="40" height="40"><div><b>AI Lottery</b><small>Reroll · v1.1</small></div></div>
     <nav id="nav" aria-label="Pages">
       <button data-view="home" class="on" aria-current="page" data-i18n="nav.home"></button>
       <span class="group" data-i18n="nav.understand"></span>
@@ -24,6 +24,7 @@
       <button data-view="score" data-i18n="nav.score"></button>
       <button data-view="clean" data-i18n="nav.clean"></button>
       <button data-view="rescue" data-i18n="nav.rescue"></button>
+      <button data-view="relay" data-i18n="nav.relay"></button>
       <span class="group" data-i18n="nav.files"></span>
       <button data-view="install" data-i18n="nav.install"></button>
       <button data-view="files" data-i18n="nav.kit"></button>
@@ -257,6 +258,7 @@
         <tr><td>Roll back</td><td>Deletes the pollution from the context outright; works best</td><td><code>/rewind</code> to the message before it went wrong, rephrase, resend</td><td><span class="pill good">Low</span></td></tr>
         <tr><td>Targeted compact</td><td>Keeps the conclusions, drops the wrong turns</td><td><span class="copyable" id="c-compact-en">/compact Keep only: the goal, confirmed decisions, current file state. Drop every rejected approach.</span> <button class="small" data-copy="c-compact-en">Copy</button></td><td><span class="pill good">Low</span></td></tr>
         <tr><td>More reasoning</td><td>Thinking clearly reduces self-pollution</td><td>Raise effort, or switch to a stronger model</td><td><span class="pill mid">Medium</span></td></tr>
+        <tr><td>Relay <span class="pill good">Best</span></td><td>A fresh session takes over; the old one writes nothing, so its mistakes stay behind</td><td>Relay page → create package → new session → <code>/relay-in</code></td><td><span class="pill mid">Medium</span></td></tr>
         <tr><td>Swap</td><td>A fresh draw; the work carries over in files. The safest</td><td><code>/handoff</code> → check → new session, test, clean start → <code>/pickup</code></td><td><span class="pill mid">Medium</span></td></tr>
         <tr><td>Keep correcting</td><td>Every correction adds more pollution</td><td>Don't</td><td><span class="pill bad">Keeps rising</span></td></tr>
       </tbody>
@@ -279,11 +281,33 @@
         <tr><td>回退</td><td>把污染直接从上下文里删掉，效果最好</td><td><code>/rewind</code> 回到变傻之前的消息，换个说法重发</td><td><span class="pill good">低</span></td></tr>
         <tr><td>定向压缩</td><td>只留结论，丢掉错误的过程</td><td><span class="copyable" id="c-compact-zh">/compact 只保留：目标、已确认的决定、当前文件状态；丢弃所有被否定的方案</span> <button class="small" data-copy="c-compact-zh">复制</button></td><td><span class="pill good">低</span></td></tr>
         <tr><td>提高推理强度</td><td>thinking 能明显减轻自我污染</td><td>调高 effort，或换更强的模型</td><td><span class="pill mid">中</span></td></tr>
+        <tr><td>接力 <span class="pill good">首选</span></td><td>新会话接手，旧会话一个字都不写，它的错误留在原地</td><td>「接力换会话」页 → 生成接力包 → 新会话 → <code>/relay-in</code></td><td><span class="pill mid">中</span></td></tr>
         <tr><td>换卡</td><td>重新抽卡，工作靠文件延续。最稳</td><td><code>/handoff</code> → 核对 → 新 session 测卡、干净开局 → <code>/pickup</code></td><td><span class="pill mid">中</span></td></tr>
         <tr><td>原地反复纠正</td><td>每次纠正都在加重污染</td><td>不要这样做</td><td><span class="pill bad">越来越高</span></td></tr>
       </tbody>
     </table></div>
     <div class="note">坏卡写的交接文档也可能有错。所以 <code>/handoff</code> 会列出它最不确定的 1～3 条请你核对，<code>/pickup</code> 也会先用 git 核对一遍现状，等你确认后才动手。</div>
+  </section>
+
+  <!-- ================= Relay (interactive, single copy) ================= -->
+  <section data-page="relay" hidden>
+    <span class="eyebrow" data-i18n="relay.eyebrow"></span>
+    <h1 data-i18n="relay.title"></h1>
+    <p class="lede" data-i18n-html="relay.lede"></p>
+    <div class="three">
+      <div class="card"><span class="k" data-i18n="relay.s1k"></span><h3 data-i18n="relay.s1t"></h3><p data-i18n-html="relay.s1p"></p></div>
+      <div class="card"><span class="k" data-i18n="relay.s2k"></span><h3 data-i18n="relay.s2t"></h3><p data-i18n-html="relay.s2p"></p></div>
+      <div class="card"><span class="k" data-i18n="relay.s3k"></span><h3 data-i18n="relay.s3t"></h3><p data-i18n-html="relay.s3p"></p></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h3 data-i18n="relay.pickTitle"></h3><div class="row-actions"><button class="small" id="relay-refresh" data-i18n="relay.refresh"></button><button class="small" id="relay-file" data-i18n="relay.file"></button></div></div>
+      <div id="relay-list" class="sessions" role="list"></div>
+    </div>
+    <div class="panel" id="relay-result" hidden></div>
+    <div class="panel">
+      <h3 data-i18n="relay.whyTitle"></h3>
+      <div data-i18n-html="relay.why"></div>
+    </div>
   </section>
 
   <!-- ================= Install (interactive, single copy) ================= -->
@@ -322,7 +346,8 @@
         <tr><td><code>/canary</code></td><td>The AI answers in text only. Request 4 reads files</td><td>The first line is a hard rule: run no commands, create/modify/delete no files. The 200 GB CSV question asks for code only — nothing runs, no test file is generated</td></tr>
         <tr><td><code>/handoff</code></td><td>Runs read-only git commands; writes one <code>HANDOFF.md</code></td><td>The only file it writes. If a same-name file exists in another format, it stops and asks — never overwrites. Never commits on its own</td></tr>
         <tr><td><code>/pickup</code></td><td>Reads <code>HANDOFF.md</code>; runs read-only git commands</td><td>Changes nothing until you say go</td></tr>
-        <tr><td>This app: Install</td><td>Writes three folders under <code>~/.claude/skills/</code></td><td>Shows the plan first. Existing same-name skills are moved to <code>~/.claude/skills-backup/&lt;time&gt;/</code>; nothing is deleted; identical ones are skipped</td></tr>
+        <tr><td>This app: Relay</td><td>Reads session records in <code>~/.claude/projects</code> and <code>~/.codex/sessions</code> when you open the page; writes one new folder <code>&lt;project&gt;/.relay/&lt;time&gt;/</code></td><td>Reads only. Passwords and keys are hidden before anything is written. The <code>.relay</code> folder tells git to ignore it. Never overwrites; runs no programs (not even git); nothing leaves your computer</td></tr>
+        <tr><td>This app: Install</td><td>Writes the four skill folders under <code>~/.claude/skills/</code></td><td>Shows the plan first. Existing same-name skills are moved to <code>~/.claude/skills-backup/&lt;time&gt;/</code>; nothing is deleted; identical ones are skipped</td></tr>
         <tr><td>This app: Export</td><td>Creates a new subfolder in the folder you pick</td><td>Always new (adds -2, -3 on name clashes); never overwrites anything</td></tr>
         <tr><td>This app: Running</td><td>One window</td><td>No network (links you click open in your browser), no permissions, no background processes; quits when the window closes. Notarized by Apple</td></tr>
         <tr><td>Chat prompts</td><td>Text-only answers in ChatGPT</td><td>The prompt says not to run code; even if it does, it runs in the provider's cloud sandbox, not on your computer</td></tr>
@@ -339,7 +364,8 @@
         <tr><td><code>/canary</code></td><td>AI 只用文字回答。第 4 题会读文件</td><td>第一行就是硬性规则：不运行任何命令，不创建、修改、删除任何文件。200GB CSV 题只写代码、不执行，不会生成测试文件</td></tr>
         <tr><td><code>/handoff</code></td><td>运行只读的 git 命令；写一个 <code>HANDOFF.md</code></td><td>这是唯一会写的文件。如果项目里已有同名文件且不是交接格式，会停下来问你，不会覆盖。不会自己 commit</td></tr>
         <tr><td><code>/pickup</code></td><td>读 <code>HANDOFF.md</code>，运行只读的 git 命令</td><td>确认前不改任何东西，等你点头才动手</td></tr>
-        <tr><td>本软件：安装</td><td>写入 <code>~/.claude/skills/</code> 下的三个文件夹</td><td>先显示计划再执行。已有同名 skill 会先挪到 <code>~/.claude/skills-backup/时间/</code>，不删除任何东西；内容相同的跳过</td></tr>
+        <tr><td>本软件：接力</td><td>打开页面时读取 <code>~/.claude/projects</code> 和 <code>~/.codex/sessions</code> 里的会话记录；只新建一个文件夹 <code>&lt;项目&gt;/.relay/&lt;时间&gt;/</code></td><td>只读。写出之前先把密码和密钥打码。<code>.relay</code> 文件夹自带 git 忽略规则。从不覆盖；不运行任何程序（连 git 都不运行）；数据不出本机</td></tr>
+        <tr><td>本软件：安装</td><td>写入 <code>~/.claude/skills/</code> 下的四个 skill 文件夹</td><td>先显示计划再执行。已有同名 skill 会先挪到 <code>~/.claude/skills-backup/时间/</code>，不删除任何东西；内容相同的跳过</td></tr>
         <tr><td>本软件：导出</td><td>在你选的文件夹里新建一个子文件夹</td><td>总是新建（重名就加 -2、-3），不覆盖任何已有文件</td></tr>
         <tr><td>本软件：运行</td><td>一个窗口</td><td>不联网（只有你点外部链接时用浏览器打开），不申请权限，没有后台进程，关窗即退出。经过 Apple 公证</td></tr>
         <tr><td>通用版提示词</td><td>在 ChatGPT 里只用文字回答</td><td>提示词要求不运行代码；就算运行，也是在对方的云端沙盒里，碰不到你的电脑</td></tr>

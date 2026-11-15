@@ -20,13 +20,14 @@ session 好坏由三层叠加决定：
 | `scoring-rubric.md` | 给开局测试打分（**只给你自己看**） | 看完 AI 的回答后 |
 | `skills/handoff/` | `/handoff`：把工作写成 `HANDOFF.md` | 旧 session 变傻时 |
 | `skills/pickup/` | `/pickup`：新 session 接手 | 新 session 第一条消息 |
-| `chat-prompts.md` | 以上三样的复制粘贴版 | ChatGPT、网页版 |
+| `skills/relay-in/` | `/relay-in`：新 session 接收软件生成的接力包 | 新 session 第一条消息 |
+| `chat-prompts.md` | 开局测试、交接、接手的复制粘贴版 | ChatGPT、网页版 |
 
 ## 安装（Claude Code，在你自己的电脑上）
 
 最简单：用 AI Lottery · Reroll 软件「安装」页一键安装（已有同名 skill 会先备份，不覆盖）。
 
-手动安装：在本文件夹里运行下面这行，把 `skills/` 下的三个文件夹复制到 `~/.claude/skills/`，所有项目都能用（`-n` 表示不覆盖已有文件）：
+手动安装：在本文件夹里运行下面这行，把 `skills/` 下的文件夹复制到 `~/.claude/skills/`，所有项目都能用（`-n` 表示不覆盖已有文件）：
 
 ```bash
 mkdir -p ~/.claude/skills && cp -Rn skills/* ~/.claude/skills/
@@ -34,7 +35,7 @@ mkdir -p ~/.claude/skills && cp -Rn skills/* ~/.claude/skills/
 
 只想在某个项目里用，就复制到那个项目的 `.claude/skills/`。
 
-三个 skill 都设置了只能手动触发，AI 不会自己调用。
+四个 skill 都设置了只能手动触发，AI 不会自己调用。
 
 ## 流程
 

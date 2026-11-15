@@ -7,5 +7,9 @@ contextBridge.exposeInMainWorld("kit", {
   copy: (text) => ipcRenderer.invoke("kit:copy", text),
   reveal: (p) => ipcRenderer.invoke("kit:reveal", p),
   platform: process.platform,
+  relayList: () => ipcRenderer.invoke("relay:list"),
+  relayPick: (lang) => ipcRenderer.invoke("relay:pick", lang),
+  relayPreview: (file) => ipcRenderer.invoke("relay:preview", file),
+  relayWrite: (file, lang, choose) => ipcRenderer.invoke("relay:write", file, lang, !!choose),
   exportKit: (lang) => ipcRenderer.invoke("kit:export", lang),
 });

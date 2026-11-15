@@ -1,14 +1,14 @@
 // File operations for the kit. Pure Node, no Electron, so it can be tested anywhere.
 // The kit ships in one folder per language (kit/en, kit/zh); every function takes that folder.
 // Safety rules:
-//  - Only ever writes the three skill folders inside ~/.claude/skills, or a NEW folder the user picked for export.
+//  - Only ever writes the kit's skill folders inside ~/.claude/skills, or a NEW folder the user picked for export.
 //  - Never deletes. Existing same-name skills are moved to ~/.claude/skills-backup/<timestamp>/ first
 //    (outside the skills folder, so Claude does not load the backup as skills).
 const fs = require("fs");
 const path = require("path");
 const os = require("os");
 
-const SKILLS = ["canary", "handoff", "pickup"];
+const SKILLS = ["canary", "handoff", "pickup", "relay-in"];
 const LANGS = ["en", "zh"];
 const EXPORT_NAME = "ai-lottery-reroll-kit";
 

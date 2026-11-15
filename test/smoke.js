@@ -8,6 +8,18 @@ process.env.HOME = home;
 const shots = process.argv[2] && !process.argv[2].startsWith("-") ? path.resolve(process.argv[2]) : null;
 if (shots) fs.mkdirSync(shots, { recursive: true });
 
+// A fake Claude Code session record (and its project folder) for the Relay page.
+const proj = path.join(home, "demo-project");
+fs.mkdirSync(proj, { recursive: true });
+fs.writeFileSync(path.join(proj, "app.js"), "x\n");
+const rec = path.join(home, ".claude", "projects", "-demo-project");
+fs.mkdirSync(rec, { recursive: true });
+const L = (o) => JSON.stringify({ sessionId: "smoke1", cwd: proj, timestamp: "2026-11-15T10:00:00Z", ...o });
+fs.writeFileSync(path.join(rec, "smoke1.jsonl"), [
+  L({ type: "user", uuid: "u1", message: { role: "user", content: "Build the demo. Never use tabs." } }),
+  L({ type: "assistant", uuid: "a1", message: { model: "m", content: [{ type: "tool_use", id: "t1", name: "Write", input: { file_path: path.join(proj, "app.js") } }] } }),
+].join("\n") + "\n");
+
 const { app, session } = require("electron");
 // Fresh profile every run, so a language saved by an earlier run can't leak in.
 app.setPath("userData", path.join(home, "userData"));
@@ -66,11 +78,28 @@ app.on("browser-window-created", (_e, win) => {
         await js(`document.querySelector('#reset').click(); document.querySelector('.seg [data-mode="cc"]').click()`);
         const bad = await js(`[0,0,0,0].forEach((v,i) => document.querySelectorAll('#qs .q')[i].querySelectorAll('.opt')[v].click()); document.querySelector('#verdict').innerText`);
         if (/null|undefined/.test(bad)) problems.push(`${lang}: stray null in bad verdict`);
-        // files page: 6 tools with content
+        // files page: 7 tools with content
         await js(`document.querySelector('#nav [data-view="files"]').click()`);
         await sleep(400);
         const tools = await js(`[...document.querySelectorAll('#tool-list pre')].filter(p => p.textContent.length > 50).length`);
-        if (tools !== 6) problems.push(`${lang}: files page shows ${tools} files`);
+        if (tools !== 7) problems.push(`${lang}: files page shows ${tools} files`);
+        // relay: list → preview → create package in the project folder
+        await js(`document.querySelector('#nav [data-view="relay"]').click()`);
+        await sleep(400);
+        const rows = await js(`document.querySelectorAll('#relay-list .sess').length`);
+        if (rows !== 1) problems.push(`${lang}: relay lists ${rows} sessions`);
+        await js(`document.querySelector('#relay-list .sess').click()`);
+        await sleep(400);
+        const stats = await js(`[...document.querySelectorAll('#relay-result .stat b')].map(b => b.textContent).join(',')`);
+        if (!stats.startsWith("1,1,0")) problems.push(`${lang}: relay stats ${stats}`);
+        await js(`document.querySelector('#relay-result button.primary').click()`);
+        await sleep(400);
+        await shot(`${lang}-relay-done`);
+        const cmds = await js(`[...document.querySelectorAll('#relay-result pre')].map(p => p.textContent)`);
+        if (cmds.length !== 3 || !cmds[0].includes('claude "/relay-in"')) problems.push(`${lang}: relay next steps ${JSON.stringify(cmds)}`);
+        const resultText = await js(`document.querySelector('#relay-result').innerText`);
+        if (lang === "en" && CJK.test(resultText)) problems.push("en: Chinese in relay result");
+        if (/\b(null|undefined|NaN)\b/.test(resultText)) problems.push(`${lang}: stray null in relay result`);
         // install into temp HOME; the installed canary must be this language's version
         await js(`document.querySelector('#nav [data-view="install"]').click(); document.querySelector('#btn-plan').click()`);
         await sleep(300);
@@ -82,6 +111,13 @@ app.on("browser-window-created", (_e, win) => {
         const doneText = await js(`document.querySelector('#plan').innerText`);
         if (/null|undefined/.test(doneText)) problems.push(`${lang}: stray null after install`);
       }
+      const pkgs = fs.readdirSync(path.join(proj, ".relay")).filter((n) => !n.startsWith("."));
+      if (pkgs.length !== 2) problems.push(`relay packages written: ${pkgs.length}`);
+      const md = fs.readFileSync(path.join(proj, ".relay", pkgs[0], "RELAY.md"), "utf8");
+      if (!md.includes("Never use tabs") || !/^## 2 /m.test(md)) problems.push("relay package content");
+      // a renderer must not be able to read arbitrary records
+      const sneaky = await js(`window.kit.relayPreview('/etc/hosts').then(() => 'read', () => 'refused')`);
+      if (sneaky !== "refused") problems.push("relay read an unlisted file");
       // a renderer must not be able to reveal arbitrary paths
       const reveal = await js(`window.kit.reveal('/etc/hosts')`);
       if (reveal !== false) problems.push("reveal accepted an arbitrary path");
@@ -89,7 +125,7 @@ app.on("browser-window-created", (_e, win) => {
       problems.push("exception: " + e.message);
     }
     if (requests.length) problems.push("network requests: " + requests.join(", "));
-    console.log(problems.length ? "SMOKE FAILED\n" + problems.join("\n") : "smoke passed: en + zh, all pages, scorer, install, no network");
+    console.log(problems.length ? "SMOKE FAILED\n" + problems.join("\n") : "smoke passed: en + zh, all pages, scorer, relay, install, no network");
     fs.rmSync(home, { recursive: true, force: true });
     app.exit(problems.length ? 1 : 0);
   });

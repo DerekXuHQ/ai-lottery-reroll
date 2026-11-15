@@ -16,7 +16,7 @@ Open a new AI session — Claude Code, ChatGPT, anything — and sometimes it's 
 |---|---|---|---|
 | 1 Opening | Server routing, load, reasoning effort — and routing is sticky | Test first; reroll bad draws | `/canary` + scorer |
 | 2 First ~10 turns | The model locks in its reading of your intent early and rarely revisits it | After passing, roll back to before the test: a clean start | `/rewind` |
-| 3 Later on | The context fills with the model's own mistakes | Remove pollution instead of adding corrections; if it can't be saved, swap sessions | `/compact` `/handoff` `/pickup` |
+| 3 Later on | The context fills with the model's own mistakes | Remove pollution instead of adding corrections; if it can't be saved, relay the work to a fresh session | `/compact` · Relay + `/relay-in` · `/handoff` `/pickup` |
 
 The key idea: **your work lives in files and git, not in the session.** Sessions are disposable.
 
@@ -41,7 +41,8 @@ From [Releases](../../releases/latest):
 
 - **Why it happens** — the three layers, the evidence, the remedies
 - **Scorer** — pick a score for each answer to `/canary`; get good / so-so / bad
-- **One-click install** — puts the `canary`, `handoff` and `pickup` skills into `~/.claude/skills/`
+- **Relay** — when a session has gone dumb, the app reads its record on disk (Claude Code or Codex) and packs everything that matters for a fresh session: your words verbatim, files, commands, a version baseline; passwords and keys hidden. The old session writes nothing. The new one settles it with `/relay-in`
+- **One-click install** — puts the `canary`, `handoff`, `pickup` and `relay-in` skills into `~/.claude/skills/`
 - **Chat prompts** — copy-paste versions for ChatGPT and other web chats
 - **Export** — save the whole kit as a folder to share or drop into a project
 - **English and Chinese** — English by default; switch in the sidebar
@@ -55,7 +56,9 @@ No app needed: the kit itself is in [`kit/en/`](kit/en/) (Chinese: [`kit/zh/`](k
 | `/canary` | The AI answers in text only | Runs no commands; creates, modifies, deletes no files |
 | `/handoff` | Read-only git commands; writes one `HANDOFF.md` | Asks before touching a same-name file in another format; never commits |
 | `/pickup` | Reads `HANDOFF.md`; read-only git commands | Changes nothing until you confirm |
-| App: Install | Writes only three folders under `~/.claude/skills/` | Shows the plan first; existing same-name skills move to `~/.claude/skills-backup/<time>/`; never deletes |
+| App: Relay | Reads session records under `~/.claude/projects` and `~/.codex/sessions`; writes one new `<project>/.relay/<time>/` folder | Read-only; secrets redacted before writing; `.relay` is git-ignored; runs no programs |
+| `/relay-in` | Reads the package; read-only git commands; writes one `HANDOFF.md` | Distills in a subagent when it can; checks with git, or file size and time without git; changes nothing until you confirm |
+| App: Install | Writes only the skill folders under `~/.claude/skills/` | Shows the plan first; existing same-name skills move to `~/.claude/skills-backup/<time>/`; never deletes |
 | App: Export | Creates a new subfolder where you choose | Never overwrites |
 | App: Running | One window | No network, no permissions, no background processes; sandboxed renderer with context isolation; Electron fuses disable RunAsNode and friends |
 
@@ -64,8 +67,8 @@ No app needed: the kit itself is in [`kit/en/`](kit/en/) (Chinese: [`kit/zh/`](k
 ```bash
 npm install
 npm start               # run
-npm test                # unit tests: install / export logic, both languages
-npm run smoke           # real Electron, both languages: every page, scorer, install (temp HOME), zero network requests
+npm test                # unit tests: install / export, relay extraction, both languages
+npm run smoke           # real Electron, both languages: every page, scorer, relay, install (temp HOME), zero network requests
 npm run icon            # regenerate build/icon.icns, icon.ico, icon.png from build/icon.svg
 npm run dist:unsigned   # local package, unsigned
 npm run dist            # all four targets; macOS signed + notarized → out/
@@ -84,8 +87,9 @@ Override with `REROLL_SIGN_IDENTITY` and `REROLL_NOTARY_PROFILE`.
 
 ```
 main.js        main process: window, IPC, no network, denies all permission requests
-preload.js     exposes only the six window.kit methods
+preload.js     exposes only the window.kit methods the UI needs
 ops.js         plain-Node file operations (install plan / install / export), unit-tested
+relay.js       plain-Node relay: session records → RELAY.md + relay.json, unit-tested
 renderer/      UI; prose pages per language, interactive text in app.js
 kit/en, kit/zh the kit shipped with the app, one folder per language (also the install source)
 build/         icon, signing entitlements, build scripts

@@ -20,13 +20,14 @@ The key: **your work lives in files and git, not in the session.** Sessions are 
 | `scoring-rubric.md` | Score the opening test (**for your eyes only**) | After reading the AI's answers |
 | `skills/handoff/` | `/handoff`: write the work into `HANDOFF.md` | When the old session goes dumb |
 | `skills/pickup/` | `/pickup`: take over in a new session | First real message of the new session |
-| `chat-prompts.md` | Copy-paste versions of the three above | ChatGPT, web chats |
+| `skills/relay-in/` | `/relay-in`: a new session settles a relay package made by the app | First message of the new session |
+| `chat-prompts.md` | Copy-paste versions of the opening test, handoff and pickup | ChatGPT, web chats |
 
 ## Install (Claude Code, on your own computer)
 
 Easiest: the Install page in the AI Lottery · Reroll app (existing skills with the same name are backed up, never overwritten).
 
-By hand: run this inside this folder to copy the three folders under `skills/` into `~/.claude/skills/`, available in every project (`-n` means never overwrite existing files):
+By hand: run this inside this folder to copy the folders under `skills/` into `~/.claude/skills/`, available in every project (`-n` means never overwrite existing files):
 
 ```bash
 mkdir -p ~/.claude/skills && cp -Rn skills/* ~/.claude/skills/
@@ -34,7 +35,7 @@ mkdir -p ~/.claude/skills && cp -Rn skills/* ~/.claude/skills/
 
 For a single project only, copy them into that project's `.claude/skills/` instead.
 
-All three skills are manual-only: the AI never invokes them on its own.
+All four skills are manual-only: the AI never invokes them on its own.
 
 ## Flow
 
