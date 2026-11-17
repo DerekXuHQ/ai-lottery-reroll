@@ -68,6 +68,8 @@ app.on("browser-window-created", (_e, win) => {
       await shot(`${lang}-launch`);
     };
     try {
+      await sleep(150); const shown = await js(`document.querySelector("#app-version").textContent`);
+      if (shown !== "Reroll · v" + require("../package.json").version) problems.push(`sidebar version shows "${shown}"`);
       await launchCheck("en");
       await js(`localStorage.setItem("lang", "zh")`);
       await new Promise((r) => { wc.once("did-finish-load", r); wc.reload(); });

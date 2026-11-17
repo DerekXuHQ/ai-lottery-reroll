@@ -525,5 +525,7 @@ $$(".tbl table").forEach((tb) => {
 });
 applyLang();
 setMode("cc");
+// The full version (e.g. 1.1.4) comes from package.json, so the sidebar never lags behind a release.
+api.version().then((v) => { $("#app-version").textContent = "Reroll · v" + v; });
 // Open on Overview in whichever language was saved (the static HTML only un-hides the English page).
 show("home");

@@ -55,6 +55,7 @@ function createWindow() {
 }
 
 const kit = (lang) => ops.kitFor(KIT, lang);
+ipcMain.handle("app:version", () => require("./package.json").version);
 ipcMain.handle("kit:files", (_e, lang) => ops.readKit(kit(lang)));
 ipcMain.handle("kit:plan", (_e, lang) => ops.installPlan(kit(lang)));
 ipcMain.handle("kit:install", (_e, lang) => {
