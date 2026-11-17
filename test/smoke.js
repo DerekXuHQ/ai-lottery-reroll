@@ -26,7 +26,17 @@ fs.writeFileSync(path.join(rec, "smoke1.jsonl"), [
   L({ type: "assistant", uuid: "a1", message: { model: "m", content: [{ type: "tool_use", id: "t1", name: "Write", input: { file_path: path.join(proj, "app.js") } }] } }),
 ].join("\n") + "\n");
 
-const { app, session } = require("electron");
+// Run fully offscreen: no window on screen, no Dock icon. main.js gets a BrowserWindow that never shows.
+const electron = require("electron");
+const { app, session } = electron;
+class Offscreen extends electron.BrowserWindow {
+  constructor(o = {}) { super({ ...o, show: false, webPreferences: { ...(o.webPreferences || {}), offscreen: true } }); this.show = () => {}; }
+}
+const Module = require("module");
+const proxied = new Proxy(electron, { get: (t, k) => (k === "BrowserWindow" ? Offscreen : t[k]) });
+const load = Module._load;
+Module._load = function (req, ...rest) { return req === "electron" ? proxied : load.call(this, req, ...rest); };
+if (app.dock) app.dock.hide();
 // Fresh profile every run, so a language saved by an earlier run can't leak in.
 app.setPath("userData", path.join(home, "userData"));
 require("../main.js");
@@ -109,6 +119,11 @@ app.on("browser-window-created", (_e, win) => {
         await sleep(400);
         const rows = await js(`document.querySelectorAll('#relay-list .sess').length`);
         if (rows !== 1) problems.push(`${lang}: relay lists ${rows} sessions`);
+        // search filters the list; the cloud prompt is filled in this language
+        const filtered = await js(`(() => { const s = document.querySelector('#relay-search'); s.value = 'zzz-no-such'; s.dispatchEvent(new Event('input')); const n = document.querySelectorAll('#relay-list .sess').length; s.value = 'demo'; s.dispatchEvent(new Event('input')); return n + ',' + document.querySelectorAll('#relay-list .sess').length; })()`);
+        if (filtered !== "0,1") problems.push(`${lang}: relay search ${filtered}`);
+        const cloud = await js(`document.querySelector('#relay-cloud-prompt').textContent`);
+        if (!cloud.includes("RELAY.md") || CJK.test(cloud) !== (lang === "zh")) problems.push(`${lang}: cloud prompt missing or wrong language`);
         await js(`document.querySelector('#relay-list .sess').click()`);
         await sleep(400);
         const stats = await js(`[...document.querySelectorAll('#relay-result .stat b')].map(b => b.textContent).join(',')`);

@@ -1,8 +1,8 @@
 {
   "name": "reroll",
   "productName": "Reroll",
-  "version": "1.1.1",
-  "description": "AI Lottery · Reroll: spot a bad AI session early, and hand the work to a fresh one when it goes dumb.",
+  "version": "1.1.2",
+  "description": "AI Lottery \u00b7 Reroll: spot a bad AI session early, and hand the work to a fresh one when it goes dumb.",
   "homepage": "https://github.com/DerekXuHQ/ai-lottery-reroll",
   "license": "MIT",
   "main": "main.js",
@@ -13,7 +13,8 @@
     "smoke": "electron test/smoke.js",
     "icon": "node build/make-icon.mjs",
     "dist": "node build/build.mjs",
-    "dist:unsigned": "node build/build.mjs --no-sign"
+    "dist:unsigned": "node build/build.mjs --no-sign",
+    "focus": "electron test/focus.js"
   },
   "devDependencies": {
     "@electron/fuses": "2.1.3",
