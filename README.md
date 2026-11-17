@@ -47,7 +47,7 @@ From [Releases](../../releases/latest):
 
 - **Why it happens** — the three layers, the evidence, the remedies
 - **Scorer** — pick a score for each answer to `/canary`; get good / so-so / bad
-- **Relay** — when a session has gone dumb, the app reads its record on disk (Claude Code or Codex) and packs everything that matters for a fresh session: your words verbatim, files, commands, a version baseline; passwords and keys hidden. The old session writes nothing. The new one settles it with `/relay-in`
+- **Relay** — when a session has gone dumb, the app reads its record on disk (Claude Code or Codex) and packs everything that matters for a fresh session: your words verbatim, files, commands, a version baseline; passwords and keys hidden. The old session writes nothing. The new one settles it with `/relay-in`. Lists every session on the computer, including Remote Control sessions and every Claude profile, by its title and your latest message, with search. Cloud sessions keep no local record: the page gives a prompt that has the old session pack itself (lower trust, checked harder by `/relay-in`)
 - **One-click install** — puts the `canary`, `handoff`, `pickup` and `relay-in` skills into `~/.claude/skills/`
 - **Chat prompts** — copy-paste versions for ChatGPT and other web chats
 - **Export** — save the whole kit as a folder to share or drop into a project
