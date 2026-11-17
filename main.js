@@ -79,9 +79,9 @@ ipcMain.handle("kit:export", async (_e, lang) => {
   return dest;
 });
 
-const sessionRow = (s) => ({ file: s.file, harness: s.harness, cwd: s.cwd, prompt: s.prompt, spawned: !!s.spawned, mtime: s.mtime, size: s.size, title: s.title || "", remote: !!s.remote, profile: s.profile || "" });
-ipcMain.handle("relay:list", () => {
-  const list = relay.listSessions({ limit: 150 });
+const sessionRow = (s) => ({ file: s.file, harness: s.harness, cwd: s.cwd, prompt: s.prompt, spawned: !!s.spawned, mtime: s.mtime, size: s.size, title: s.title || "", last: s.last || "", remote: !!s.remote, profile: s.profile || "" });
+ipcMain.handle("relay:list", async () => {
+  const list = await relay.listSessionsAsync();
   for (const s of list) readable.add(s.file);
   return list.map(sessionRow);
 });

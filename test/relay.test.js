@@ -125,6 +125,30 @@ const list = relay.listSessions({ home });
 assert.deepStrictEqual(list.map((l) => l.harness).sort(), ["claude-code", "codex"]);
 assert.strictEqual(list.find((l) => l.harness === "codex").prompt, "Fix the parser, e.g. dates and numbers");
 assert.match(list.find((l) => l.harness === "claude-code").prompt, /^Build a todo app/);
+assert.ok(list.every((l) => l.last), "every listed session shows its latest message");
+
+// A second profile (~/.claude-b) with a Remote Control session titled through set_session_title, a renamed
+// session, and a Codex thread name from session_index.jsonl.
+const U = (sid, text, extra = {}) => JSON.stringify({ type: "user", sessionId: sid, cwd: loose, message: { role: "user", content: text }, ...extra });
+const bdir = path.join(home, ".claude-b", "projects", "-loose");
+fs.mkdirSync(bdir, { recursive: true });
+const rcId = "11111111-2222-3333-4444-555555555555", renamedId = "66666666-7777-8888-9999-000000000000";
+fs.writeFileSync(path.join(bdir, rcId + ".jsonl"), [U(rcId, "first ask"), U(rcId, "<command-name>x</command-name>"), U(rcId, "latest ask")].join("\n") + "\n");
+fs.writeFileSync(path.join(bdir, renamedId + ".jsonl"), [U(renamedId, "hello"), JSON.stringify({ type: "custom-title", customTitle: "My renamed thread", sessionId: renamedId })].join("\n") + "\n");
+fs.writeFileSync(path.join(home, ".claude-b", "bridge-transcript-cse_ABC123.jsonl"), [
+  JSON.stringify({ type: "system", session_id: rcId }),
+  JSON.stringify({ type: "assistant", message: { content: [{ type: "tool_use", name: "mcp__claude-code-remote__set_session_title", input: { session_id: "session_ABC123", title: "Web \"title\" B" } }] } }),
+].join("\n") + "\n");
+fs.writeFileSync(path.join(home, ".codex", "session_index.jsonl"), JSON.stringify({ id: "x1", thread_name: "old" }) + "\n");
+const codexId = "019ea401-8648-7ff0-a5fa-a0c9a95dc30c";
+fs.writeFileSync(path.join(xdir, `rollout-2026-11-15T11-00-00-${codexId}.jsonl`), fs.readFileSync(xfile));
+fs.appendFileSync(path.join(home, ".codex", "session_index.jsonl"), JSON.stringify({ id: codexId, thread_name: "Parser fixes" }) + "\n");
+const list2 = relay.listSessions({ home });
+const rc = list2.find((l) => l.file.includes(rcId));
+assert.deepStrictEqual([rc.profile, rc.title, rc.remote, rc.prompt, rc.last], ["b", "Web \"title\" B", true, "first ask", "latest ask"]);
+assert.strictEqual(list2.find((l) => l.file.includes(renamedId)).title, "My renamed thread");
+assert.strictEqual(list2.find((l) => l.file.includes(codexId)).title, "Parser fixes");
+assert.deepStrictEqual(relay.listSessions({ home, limit: 2 }).length, 2);
 
 fs.rmSync(home, { recursive: true, force: true });
 console.log("relay tests passed: Claude Code + Codex extraction, secrets, git/non-git baseline, package, listing");

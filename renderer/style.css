@@ -213,3 +213,4 @@ pre{margin:0;background:var(--code-bg);color:var(--code-fg);font:12px/1.6 var(--
 .steps-mini{margin:4px 0 12px;padding-left:22px;line-height:1.7}
 #relay-cloud-prompt{max-height:260px;overflow:auto;white-space:pre-wrap}
 @media (max-width:900px){.sess-tags{flex-direction:row;flex-wrap:wrap}}
+.relay-count{margin:0;font-size:12.5px}

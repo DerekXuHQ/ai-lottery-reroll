@@ -55,12 +55,16 @@ const STR = {
     "relay.s2k": "2 · NEW SESSION", "relay.s2t": "Settle", "relay.s2p": "Open a fresh session and type <code>/relay-in</code>. It distills the package into a one-page <code>HANDOFF.md</code> (in a subagent when it can) and checks it: with git where there is git, by file size and time where there isn't.",
     "relay.s3k": "3 · YOU", "relay.s3t": "Confirm", "relay.s3p": "It shows you the goal and a checklist of at most 10 items. Tick, strike or edit; your edits win. Only then does it start working.",
     "relay.pickTitle": "Sessions on this computer", "relay.refresh": "Refresh", "relay.file": "Choose a record file…",
-    "relay.search": "Filter by title, folder or first message",
+    "relay.search": "Filter by title, folder or anything you said",
     "relay.remote": "Remote Control",
+    "relay.latest": "Latest: ",
+    "relay.first": "First: ",
+    "relay.countAll": "{n} sessions",
+    "relay.countSome": "{n} sessions; showing the newest {m}. Type to narrow down.",
     "relay.profile": "Account",
     "relay.noMatch": "No session matches.",
     "relay.cloudTitle": "Session not on this computer?",
-    "relay.cloudLede": "Cloud sessions (claude.ai/code in the cloud, Codex cloud tasks) and sessions on another computer keep no record here. Remote Control sessions do: they run on this computer and are in the list above, with the same title as on the web. For the rest, the old session packs its own work. It sees less than this app does (compacted messages are only summarized), so the package says so and the new session checks more.",
+    "relay.cloudLede": "Cloud sessions (claude.ai/code in the cloud, Codex cloud tasks) and sessions on another computer keep no record here. Remote Control sessions do: they run on this computer and are in the list above, under the same title as on the web when this computer has it, otherwise under the folder and your latest message. For the rest, the old session packs its own work. It sees less than this app does (compacted messages are only summarized), so the package says so and the new session checks more.",
     "relay.cloud1": "Copy the prompt below and send it <b>in the old session</b>.",
     "relay.cloud2": "It writes <code>.relay/&lt;time&gt;/RELAY.md</code> in the project (a cloud session commits and pushes it). If it can't write files, save its code block there yourself.",
     "relay.cloud3": "Open a <b>fresh session</b> in the same project (same branch) and type <code>/relay-in</code>.",
@@ -126,12 +130,16 @@ const STR = {
     "relay.s2k": "2 · 新会话", "relay.s2t": "接收", "relay.s2p": "开一个新会话，输入 <code>/relay-in</code>。它把接力包提炼成一页 <code>HANDOFF.md</code>（能用子代理就用子代理），再核对：有 git 用 git，没有 git 就比文件大小和修改时间。",
     "relay.s3k": "3 · 你", "relay.s3t": "确认", "relay.s3p": "它给你看一句话目标和不超过 10 行的清单。你打勾、划掉或修改，以你为准，然后它才开始干活。",
     "relay.pickTitle": "这台电脑上的会话", "relay.refresh": "刷新", "relay.file": "选择记录文件…",
-    "relay.search": "按标题、文件夹或第一句话筛选",
+    "relay.search": "按标题、文件夹或你说过的话筛选",
     "relay.remote": "远程控制",
+    "relay.latest": "最新：",
+    "relay.first": "第一句：",
+    "relay.countAll": "共 {n} 个会话",
+    "relay.countSome": "共 {n} 个会话，显示最近的 {m} 个。输入关键词缩小范围。",
     "relay.profile": "账号",
     "relay.noMatch": "没有符合的会话。",
     "relay.cloudTitle": "会话不在这台电脑上？",
-    "relay.cloudLede": "云端会话（claude.ai/code 的云端会话、Codex 云端任务）和别的电脑上的会话，本机没有记录。远程控制会话是有的：它们就在这台电脑上运行，在上面的列表里，标题和网页上一样。其余的，让旧会话自己打包。它看到的比本应用少（被压缩的消息只能概括），所以包里会注明，新会话会多核对一步。",
+    "relay.cloudLede": "云端会话（claude.ai/code 的云端会话、Codex 云端任务）和别的电脑上的会话，本机没有记录。远程控制会话是有的：它们就在这台电脑上运行，在上面的列表里。本机存着网页标题的，显示的就是网页上的标题；没存的，显示文件夹和你最新说的一句话。其余的，让旧会话自己打包。它看到的比本应用少（被压缩的消息只能概括），所以包里会注明，新会话会多核对一步。",
     "relay.cloud1": "复制下面的提示词，<b>发给旧会话</b>。",
     "relay.cloud2": "它会在项目里写出 <code>.relay/&lt;时间&gt;/RELAY.md</code>（云端会话会提交并推送）。写不了文件的，把它给的代码块自己存到这个位置。",
     "relay.cloud3": "在同一个项目（同一个分支）里开一个<b>新会话</b>，输入 <code>/relay-in</code>。",
@@ -409,18 +417,22 @@ const ago = (ms) => {
 const mb = (b) => (b / 1048576 >= 1 ? (b / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(b / 1024)) + " KB");
 const tail = (p) => (p ? p.split(/[\\/]/).filter(Boolean).slice(-2).join("/") : "—");
 const TOOL = { "claude-code": "Claude Code", codex: "Codex" };
+const RELAY_SHOW = 200;
 
 function renderRelayList() {
   const box = $("#relay-list");
   if (!relayRows) return;
   if (!relayRows.length) { box.replaceChildren(h("p", { className: "muted", textContent: t("relay.empty") })); return; }
-  // Search covers the web title (from the desktop app), folder, first message and profile.
+  // Search covers the title, folder, first and latest message, and profile. Only the first RELAY_SHOW matches are
+  // drawn: a full scan can find thousands of sessions.
   const q = ($("#relay-search").value || "").trim().toLowerCase();
-  const rows = q ? relayRows.filter((r) => [r.title, r.cwd, r.prompt, r.profile].some((x) => x && x.toLowerCase().includes(q))) : relayRows;
-  if (!rows.length) { box.replaceChildren(h("p", { className: "muted", textContent: t("relay.noMatch") })); return; }
-  box.replaceChildren(...rows.map((r) => {
+  const all = q ? relayRows.filter((r) => [r.title, r.cwd, r.prompt, r.last, r.profile].some((x) => x && x.toLowerCase().includes(q))) : relayRows;
+  if (!all.length) { box.replaceChildren(h("p", { className: "muted", textContent: t("relay.noMatch") })); return; }
+  const rows = all.slice(0, RELAY_SHOW);
+  const note = h("p", { className: "muted relay-count", textContent: all.length > rows.length ? t("relay.countSome").replace("{n}", all.length).replace("{m}", rows.length) : t("relay.countAll").replace("{n}", all.length) });
+  box.replaceChildren(note, ...rows.map((r) => {
     const name = r.title || (r.cwd ? tail(r.cwd) : r.file.split(/[\\/]/).pop());
-    const said = r.picked ? t("relay.picked") : r.prompt || (r.spawned ? t("relay.spawned") : t("relay.noText"));
+    const said = r.picked ? t("relay.picked") : r.last ? t("relay.latest") + r.last : r.prompt || (r.spawned ? t("relay.spawned") : t("relay.noText"));
     const b = h("button", { className: "sess" + (relayCurrent === r.file ? " on" : "") },
       h("span", { className: "sess-tags" },
         h("span", { className: "pill " + (r.harness === "codex" ? "mid" : "good"), textContent: TOOL[r.harness] }),
@@ -431,7 +443,7 @@ function renderRelayList() {
         h("span", { className: "muted", textContent: r.title && r.cwd ? tail(r.cwd) + " · " + said : said })),
       h("span", { className: "sess-meta muted", textContent: ago(r.mtime) + (r.size ? " · " + mb(r.size) : "") }));
     b.setAttribute("role", "listitem");
-    b.title = (r.prompt && !r.picked ? r.prompt + "\n" : "") + r.file;
+    b.title = [r.title, r.prompt && !r.picked ? t("relay.first") + r.prompt : "", r.last ? t("relay.latest") + r.last : "", r.file].filter(Boolean).join("\n");
     b.addEventListener("click", () => previewRelay(r.file));
     return b;
   }));

@@ -200,28 +200,65 @@ function parseCodex(file) {
 }
 
 /* ---------------- listing ---------------- */
-function firstPrompt(file, harness) {
-  let spawned = false; // started by another session, not by a person
-  for (const line of readHead(file)) {
-    const m = json(line);
-    if (!m) continue;
-    let t = "";
-    if (m.type === "user" && /^\s*<relay from=/.test(textOf(m.message && m.message.content))) spawned = true;
-    if (harness === "claude-code" && m.type === "user" && !m.isMeta && !m.isCompactSummary && !m.isSidechain) t = textOf(m.message && m.message.content);
-    if (harness === "codex" && m.type === "response_item" && m.payload && m.payload.type === "message" && m.payload.role === "user") t = textOf(m.payload.content);
-    const shown = slashCommand(t) || t;
-    if (!isNoise(shown)) return { prompt: redact(shown.trim()).text.replace(/\s+/g, " ").slice(0, 140), cwd: m.cwd || null };
-  }
-  return { prompt: "", cwd: null, spawned };
+// Listing reads only the start and the end of each record, so thousands of sessions list in about a second.
+const LIST_BYTES = 256 * 1024;
+function readSlice(file, fromEnd, bytes = LIST_BYTES) {
+  const fd = fs.openSync(file, "r");
+  try {
+    const size = fs.fstatSync(fd).size, len = Math.min(bytes, size), pos = fromEnd ? size - len : 0;
+    const buf = Buffer.alloc(len);
+    fs.readSync(fd, buf, 0, len, pos);
+    const lines = buf.toString("utf8").split("\n");
+    if (fromEnd && pos > 0) lines.shift(); // cut mid-line
+    if (!fromEnd && len < size) lines.pop();
+    return lines;
+  } finally { fs.closeSync(fd); }
 }
-function cwdOf(file, harness) {
-  for (const line of readHead(file)) {
+const oneLine = (t) => redact(t.trim()).text.replace(/\s+/g, " ").slice(0, 140);
+// A person's message in either tool's record, or "" for anything else (tool output, injected context, meta).
+function userText(m, harness) {
+  let t = "";
+  if (harness === "claude-code" && m.type === "user" && !m.isMeta && !m.isCompactSummary && !m.isSidechain) t = textOf(m.message && m.message.content);
+  if (harness === "codex" && m.type === "response_item" && m.payload && m.payload.type === "message" && m.payload.role === "user") t = textOf(m.payload.content);
+  const shown = slashCommand(t) || t;
+  return isNoise(shown) ? "" : shown;
+}
+// Everything the list needs from one record: folder, first and latest message, and a title the user or a
+// session gave it inside the record (/rename, or a name set by the tool that started it).
+function peek(file, harness) {
+  const out = { prompt: "", last: "", cwd: null, spawned: false, title: "" };
+  const head = readSlice(file, false);
+  for (const line of head) {
     const m = json(line);
     if (!m) continue;
-    if (harness === "claude-code" && m.cwd) return m.cwd;
-    if (harness === "codex" && m.payload && m.payload.cwd) return m.payload.cwd;
+    if (!out.cwd) out.cwd = harness === "codex" ? (m.payload && m.payload.cwd) || null : m.cwd || null;
+    if (m.type === "user" && /^\s*<relay from=/.test(textOf(m.message && m.message.content))) out.spawned = true;
+    if (!out.prompt) { const t = userText(m, harness); if (t) out.prompt = oneLine(t); }
+    if (m.type === "custom-title" && m.customTitle) out.title = String(m.customTitle);
+    else if (m.type === "agent-name" && m.agentName && !out.title) out.title = String(m.agentName);
+    if (out.prompt && out.cwd && harness === "codex") break;
   }
-  return null;
+  // The end of a long session can be all tool output: look further back once (up to 4 MB) before giving up.
+  const size = fs.statSync(file).size;
+  let named = "";
+  for (const bytes of [LIST_BYTES, 16 * LIST_BYTES]) {
+    const tail = size > LIST_BYTES ? readSlice(file, true, bytes) : head;
+    for (let i = tail.length - 1; i >= 0; i--) {
+      const m = json(tail[i]);
+      if (!m) continue;
+      if (!named && m.type === "custom-title" && m.customTitle) named = String(m.customTitle);
+      if (!out.last) {
+        const t = userText(m, harness) || (m.type === "last-prompt" && m.lastPrompt ? m.lastPrompt : "")
+          || (harness === "codex" && m.type === "event_msg" && m.payload && m.payload.type === "user_message" && m.payload.message ? m.payload.message : "");
+        if (t && !isNoise(t)) out.last = oneLine(t);
+      }
+      if (out.last && named) break;
+    }
+    if (out.last || size <= bytes) break;
+  }
+  if (named) out.title = named;
+  out.title = realTitle(out.title);
+  return out;
 }
 function walk(dir, depth, pick, out) {
   let entries;
@@ -242,6 +279,8 @@ function claudeProfiles(home, env = process.env) {
   return [...dirs].filter((d) => { try { return fs.statSync(path.join(d, "projects")).isDirectory(); } catch { return false; } })
     .map((d) => ({ dir: d, profile: path.basename(d) === ".claude" ? "" : path.basename(d).replace(/^\.claude-?/, "") || path.basename(d) }));
 }
+// "New session" / "New session (fork)" is the placeholder before a title is set: no help in picking a session.
+const realTitle = (t) => (typeof t === "string" && t.trim() && !/^new session( \(fork\))?$/i.test(t.trim()) ? t.trim().slice(0, 140) : "");
 // The Claude desktop app indexes its sessions (Code tab and Remote Control) with the same title you see on
 // claude.ai. Read-only; keyed by the CLI session id, which is the record's file name.
 function desktopIndex(home, platform = process.platform, env = process.env) {
@@ -252,34 +291,96 @@ function desktopIndex(home, platform = process.platform, env = process.env) {
   for (const f of walk(base, 3, (n) => /^local_.*\.json$/.test(n), [])) {
     try {
       const d = JSON.parse(fs.readFileSync(f, "utf8"));
-      const ids = [d.cliSessionId, d.lastAssistantCliSessionId].filter(Boolean);
-      // "New session" / "New session (fork)" is the placeholder before a title is set: no help in picking a session.
-      const title = typeof d.title === "string" && !/^new session( \(fork\))?$/i.test(d.title.trim()) ? d.title.slice(0, 140) : "";
-      const v = { title, remote: !!(d.remoteControlSpawn || (Array.isArray(d.bridgeSessionIds) && d.bridgeSessionIds.length)) };
-      for (const id of ids) if (!map.has(id) || v.title) map.set(id, v);
+      const v = { title: realTitle(d.title), remote: !!(d.remoteControlSpawn || (Array.isArray(d.bridgeSessionIds) && d.bridgeSessionIds.length)) };
+      for (const id of [d.cliSessionId, d.lastAssistantCliSessionId].filter(Boolean)) if (!map.has(id) || v.title) map.set(id, v);
     } catch { /* skip a file being written */ }
   }
   return map;
 }
-// Recent sessions from both tools and every Claude profile, newest first.
-function listSessions({ home = os.homedir(), limit = 150, platform = process.platform, env = process.env } = {}) {
-  const claude = claudeProfiles(home, env).flatMap((p) =>
+// `claude remote-control` (without the desktop app) keeps one bridge-transcript-cse_<id>.jsonl per web session in
+// its profile folder. Its first lines name the local record; titles set through set_session_title name the web
+// session (session_<id>, same <id>). Together they give the web title of a Remote Control session.
+function bridgeIndex(profileDir) {
+  const local = new Map(), titles = new Map();
+  const files = walk(profileDir, 0, (n) => /^bridge-transcript-cse_.*\.jsonl$/.test(n), [])
+    .map((f) => { try { return { f, t: fs.statSync(f).mtimeMs }; } catch { return null; } }).filter(Boolean).sort((a, b) => a.t - b.t);
+  for (const { f } of files) {
+    const id = path.basename(f, ".jsonl").replace(/^bridge-transcript-cse_/, "");
+    let lines;
+    try { lines = fs.readFileSync(f, "utf8").split("\n"); } catch { continue; }
+    for (const line of lines) {
+      if (!local.has(id)) { const m = /"session_id":"([0-9a-f-]{36})"/.exec(line); if (m) local.set(id, m[1]); }
+      if (line.includes("set_session_title")) {
+        for (const m of line.matchAll(/"input":\{"session_id":"(?:session_|cse_)?([\w]+)","title":"((?:[^"\\]|\\.)*)"/g)) titles.set(m[1], json(`"${m[2]}"`) || "");
+      }
+    }
+  }
+  const out = new Map();
+  for (const [id, uuid] of local) out.set(uuid, { title: realTitle(titles.get(id)), remote: true });
+  return out;
+}
+// Codex keeps thread names in session_index.jsonl (latest line wins); record names end in the thread id.
+function codexNames(codexHome) {
+  const map = new Map();
+  try {
+    for (const line of fs.readFileSync(path.join(codexHome, "session_index.jsonl"), "utf8").split("\n")) {
+      const m = json(line);
+      if (m && m.id && m.thread_name) map.set(m.id, realTitle(m.thread_name));
+    }
+  } catch { /* no index */ }
+  return map;
+}
+// Listing results keyed by file, reused while the file's size and time are unchanged.
+const peekCache = new Map();
+function cachedPeek(s) {
+  const key = s.file, hit = peekCache.get(key);
+  if (hit && hit.mtime === s.mtime && hit.size === s.size) return hit.v;
+  const v = peek(s.file, s.harness);
+  peekCache.set(key, { mtime: s.mtime, size: s.size, v });
+  return v;
+}
+// Every session from both tools and every Claude profile, newest first. The work is split in two so the app can
+// yield between chunks (listSessionsAsync) and keep its window responsive during a first scan of thousands.
+function sessionStubs({ home, limit, platform, env }) {
+  const profiles = claudeProfiles(home, env);
+  const claude = profiles.flatMap((p) =>
     walk(path.join(p.dir, "projects"), 1, (n) => n.endsWith(".jsonl"), []).map((f) => ({ file: f, harness: "claude-code", profile: p.profile })));
-  const codex = walk(path.join(home, ".codex", "sessions"), 3, (n) => /^rollout-.*\.jsonl$/.test(n), []).map((f) => ({ file: f, harness: "codex", profile: "" }));
+  const codexHome = env.CODEX_HOME ? path.resolve(env.CODEX_HOME) : path.join(home, ".codex");
+  const codex = walk(path.join(codexHome, "sessions"), 3, (n) => /^rollout-.*\.jsonl$/.test(n), []).map((f) => ({ file: f, harness: "codex", profile: "" }));
   const index = desktopIndex(home, platform, env);
-  return [...claude, ...codex]
+  const bridges = new Map();
+  for (const p of profiles) for (const [k, v] of bridgeIndex(p.dir)) bridges.set(k, v);
+  const names = codexNames(codexHome);
+  const stubs = [...claude, ...codex]
     .map((s) => { try { const st = fs.statSync(s.file); return { ...s, mtime: st.mtimeMs, size: st.size }; } catch { return null; } })
     .filter((s) => s && s.size > 0)
     .sort((a, b) => b.mtime - a.mtime)
-    .slice(0, limit)
-    .map((s) => {
-      const f = firstPrompt(s.file, s.harness);
-      const ix = s.harness === "claude-code" ? index.get(path.basename(s.file, ".jsonl")) : null;
-      return { ...s, prompt: f.prompt, spawned: !!f.spawned, cwd: f.cwd || cwdOf(s.file, s.harness), title: ix ? ix.title : "", remote: !!(ix && ix.remote) };
-    });
+    .slice(0, limit);
+  return { stubs, index, bridges, names };
+}
+function sessionRow(s, { index, bridges, names }) {
+  let f;
+  try { f = cachedPeek(s); } catch { f = { prompt: "", last: "", cwd: null, spawned: false, title: "" }; }
+  const id = path.basename(s.file, ".jsonl");
+  const ix = s.harness === "claude-code" ? index.get(id) || bridges.get(id) : null;
+  const codexId = s.harness === "codex" ? (/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/.exec(id) || [])[1] : null;
+  const title = (ix && ix.title) || f.title || (codexId && names.get(codexId)) || "";
+  return { ...s, prompt: f.prompt, last: f.last, spawned: f.spawned, cwd: f.cwd, title, remote: !!(ix && ix.remote) };
+}
+function listSessions({ home = os.homedir(), limit = Infinity, platform = process.platform, env = process.env } = {}) {
+  const ctx = sessionStubs({ home, limit, platform, env });
+  return ctx.stubs.map((s) => sessionRow(s, ctx));
+}
+async function listSessionsAsync({ home = os.homedir(), limit = Infinity, platform = process.platform, env = process.env } = {}) {
+  const ctx = sessionStubs({ home, limit, platform, env });
+  const out = [];
+  for (let i = 0; i < ctx.stubs.length; i++) {
+    out.push(sessionRow(ctx.stubs[i], ctx));
+    if (i % 40 === 39) await new Promise((r) => setImmediate(r));
+  }
+  return out;
 }
 
-/* ---------------- facts checked against the disk now ---------------- */
 function gitBaseline(cwd) {
   // Read .git directly: running git could pop up a "install developer tools" dialog on a Mac without them.
   let dir = cwd;
@@ -481,4 +582,4 @@ function summarize(r) {
   };
 }
 
-module.exports = { listSessions, build, render, writePackage, summarize, redact, LIMITS };
+module.exports = { listSessions, listSessionsAsync, build, render, writePackage, summarize, redact, LIMITS };
