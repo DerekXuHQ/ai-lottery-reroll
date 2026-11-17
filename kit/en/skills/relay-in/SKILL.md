@@ -16,6 +16,8 @@ The newest folder in `.relay/` (in the project root, or the folder the user name
 
 No `relay.json` and a title that says the old session wrote it itself: the package is **lower trust**. Section 2 may be paraphrased where the old session no longer saw the original. Treat every quote as "probably the user's words", check sections 3–6 against git and the files, and list in step 4 any user rule that rests only on this package.
 
+**A package the session wrote itself** (from the "Session not on this computer?" prompt in Reroll): the folder holds `INDEX.md` + `lead.md`, and maybe `children/`. Treat `lead.md` as RELAY.md, at the same lower trust. Read `INDEX.md` first: it is the roster of sub-sessions the old session started, with each one's receipt (received / received after redo / missing / written by the lead).
+
 ## 2. Distill — in a subagent if you can
 
 If you can start a subagent (for example the Task / Agent tool), give it steps 2a–2b and ask it to return **only** the finished HANDOFF.md text. Then write that text to `HANDOFF.md` yourself. This keeps the raw record out of your context: that is the point of a fresh session. If you can't, do it yourself.
@@ -56,6 +58,12 @@ Every rule, correction and preference (★ in RELAY.md), merged and deduplicated
 ## How to verify
 ```
 
+2c. **When there is a `children/` folder (a lead with sub-sessions)**: give each sub-session's file to its own subagent, in parallel where you can, at most 8 at a time, one file per subagent. Ask each for half a page only: name | task | status | where the output is | next step | rules and corrections the user gave it directly (verbatim, cited `[name#n]`). Don't read those files yourself. With all the half pages back, in HANDOFF.md:
+- "User preferences and constraints" merges the rules from the lead and every sub-session, without duplicates. Where two say different things about the same point, the later one wins; note the conflict.
+- "Current state" starts with a work-line table, one row per sub-session: name | status | output | next step | receipt.
+- Anyone marked "missing" in INDEX.md goes under "Open questions" on its own: name, reason, and "this part of the work was not handed over".
+- Entries "written by the lead" are a map, not facts.
+
 ## 3. Check against reality — with your own tools
 
 Use section 6 of RELAY.md:
@@ -73,7 +81,7 @@ Reply with only:
 1. The real goal, in one sentence
 2. A checklist of at most 10 key items (decisions, preferences, next steps) — the user ticks, strikes or edits
 3. Mismatches you found in step 3
-4. Manual checks only the user can do
+4. Manual checks only the user can do; if any sub-session is marked missing, ask whether to package it on its own
 5. The next step you propose
 
 Wait for the user. Their edits override everything; update HANDOFF.md with them. From then on, work from HANDOFF.md, and open RELAY.md or the original record only to look up a specific [#n] or file.

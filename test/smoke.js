@@ -125,7 +125,7 @@ app.on("browser-window-created", (_e, win) => {
         const filtered = await js(`(() => { const s = document.querySelector('#relay-search'); s.value = 'zzz-no-such'; s.dispatchEvent(new Event('input')); const n = document.querySelectorAll('#relay-list .sess').length; s.value = 'demo'; s.dispatchEvent(new Event('input')); return n + ',' + document.querySelectorAll('#relay-list .sess').length; })()`);
         if (filtered !== "0,1") problems.push(`${lang}: relay search ${filtered}`);
         const cloud = await js(`document.querySelector('#relay-cloud-prompt').textContent`);
-        if (!cloud.includes("RELAY.md") || CJK.test(cloud) !== (lang === "zh")) problems.push(`${lang}: cloud prompt missing or wrong language`);
+        if (!cloud.includes("INDEX.md") || CJK.test(cloud) !== (lang === "zh")) problems.push(`${lang}: cloud prompt missing or wrong language`);
         await js(`document.querySelector('#relay-list .sess').click()`);
         await sleep(400);
         const stats = await js(`[...document.querySelectorAll('#relay-result .stat b')].map(b => b.textContent).join(',')`);
