@@ -18,6 +18,14 @@ No `relay.json` and a title that says the old session wrote it itself: the packa
 
 **A package the session wrote itself** (from the "Session not on this computer?" prompt in Reroll): the folder holds `INDEX.md` + `lead.md`, and maybe `children/`. Treat `lead.md` as RELAY.md, at the same lower trust. Read `INDEX.md` first: it is the roster of sub-sessions the old session started, with each one's receipt (received / received after redo / missing / written by the lead).
 
+**A package of exported records** (from the newer prompt): the folder holds `INDEX.md` + `export.py` + `raw/`. `raw/` holds work records exported by the script (JSON Lines, conversation only, with thinking and system instructions removed). They are the original record, not written by a model, so they are as trustworthy as a package Reroll made:
+- `raw/00-lead.jsonl`: the lead's (old session's) own record. Its last turn is the handoff instruction itself; skip it.
+- `raw/00-lead/`: the records of sub-agents the lead started, as they were before the handoff.
+- `raw/<#>-<name>.jsonl`: records each sub-session exported itself. Where one duplicates a record in `raw/00-lead/`, use the one with more lines and the later time.
+- `raw/<#>-<name>.md` whose first line says it was written by the model: a fact list, one level lower in trust.
+- "What I know of the results" in `INDEX.md` is written by the lead: a map only.
+How to read them: each line of a Claude Code record is one JSON object; `type` is `user` or `assistant` and the content is in `message.content`; in a Codex record look at `payload`. The user's own words are `type: user` messages whose content is text (not `tool_result`); number them in order `[#n]` and quote them verbatim. Treat the lead's record as the raw record for step 2 and distill it with 2a–2b.
+
 ## 2. Distill — in a subagent if you can
 
 If you can start a subagent (for example the Task / Agent tool), give it steps 2a–2b and ask it to return **only** the finished HANDOFF.md text. Then write that text to `HANDOFF.md` yourself. This keeps the raw record out of your context: that is the point of a fresh session. If you can't, do it yourself.
@@ -58,7 +66,7 @@ Every rule, correction and preference (★ in RELAY.md), merged and deduplicated
 ## How to verify
 ```
 
-2c. **When there is a `children/` folder (a lead with sub-sessions)**: give each sub-session's file to its own subagent, in parallel where you can, at most 8 at a time, one file per subagent. Ask each for half a page only: name | task | status | where the output is | next step | rules and corrections the user gave it directly (verbatim, cited `[name#n]`). Don't read those files yourself. With all the half pages back, in HANDOFF.md:
+2c. **When there is a `children/` folder, or `raw/` holds more than the lead's record (a lead with sub-sessions)**: give each sub-session's file (`.md` or `.jsonl`) to its own subagent, in parallel where you can, at most 8 at a time, one file per subagent. Ask each for half a page only: name | task | status | where the output is | next step | rules and corrections the user gave it directly (verbatim, cited `[name#n]`). Don't read those files yourself. With all the half pages back, in HANDOFF.md:
 - "User preferences and constraints" merges the rules from the lead and every sub-session, without duplicates. Where two say different things about the same point, the later one wins; note the conflict.
 - "Current state" starts with a work-line table, one row per sub-session: name | status | output | next step | receipt.
 - Anyone marked "missing" in INDEX.md goes under "Open questions" on its own: name, reason, and "this part of the work was not handed over".
