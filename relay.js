@@ -233,16 +233,50 @@ function walk(dir, depth, pick, out) {
   }
   return out;
 }
-// Recent sessions from both tools, newest first.
-function listSessions({ home = os.homedir(), limit = 40 } = {}) {
-  const claude = walk(path.join(home, ".claude", "projects"), 1, (n) => n.endsWith(".jsonl"), []).map((f) => ({ file: f, harness: "claude-code" }));
-  const codex = walk(path.join(home, ".codex", "sessions"), 3, (n) => /^rollout-.*\.jsonl$/.test(n), []).map((f) => ({ file: f, harness: "codex" }));
+// Every Claude Code profile on this machine: ~/.claude, ~/.claude-<name> (CLAUDE_CONFIG_DIR profiles)
+// and $CLAUDE_CONFIG_DIR itself. Each one keeps its own projects/ folder.
+function claudeProfiles(home, env = process.env) {
+  const dirs = new Set([path.join(home, ".claude")]);
+  try { for (const e of fs.readdirSync(home, { withFileTypes: true })) if (e.isDirectory() && /^\.claude-[\w.-]+$/.test(e.name)) dirs.add(path.join(home, e.name)); } catch { /* unreadable home */ }
+  if (env.CLAUDE_CONFIG_DIR) dirs.add(path.resolve(env.CLAUDE_CONFIG_DIR));
+  return [...dirs].filter((d) => { try { return fs.statSync(path.join(d, "projects")).isDirectory(); } catch { return false; } })
+    .map((d) => ({ dir: d, profile: path.basename(d) === ".claude" ? "" : path.basename(d).replace(/^\.claude-?/, "") || path.basename(d) }));
+}
+// The Claude desktop app indexes its sessions (Code tab and Remote Control) with the same title you see on
+// claude.ai. Read-only; keyed by the CLI session id, which is the record's file name.
+function desktopIndex(home, platform = process.platform, env = process.env) {
+  const base = platform === "darwin" ? path.join(home, "Library", "Application Support", "Claude", "claude-code-sessions")
+    : platform === "win32" ? path.join(env.APPDATA || path.join(home, "AppData", "Roaming"), "Claude", "claude-code-sessions")
+    : path.join(env.XDG_CONFIG_HOME || path.join(home, ".config"), "Claude", "claude-code-sessions");
+  const map = new Map();
+  for (const f of walk(base, 3, (n) => /^local_.*\.json$/.test(n), [])) {
+    try {
+      const d = JSON.parse(fs.readFileSync(f, "utf8"));
+      const ids = [d.cliSessionId, d.lastAssistantCliSessionId].filter(Boolean);
+      // "New session" / "New session (fork)" is the placeholder before a title is set: no help in picking a session.
+      const title = typeof d.title === "string" && !/^new session( \(fork\))?$/i.test(d.title.trim()) ? d.title.slice(0, 140) : "";
+      const v = { title, remote: !!(d.remoteControlSpawn || (Array.isArray(d.bridgeSessionIds) && d.bridgeSessionIds.length)) };
+      for (const id of ids) if (!map.has(id) || v.title) map.set(id, v);
+    } catch { /* skip a file being written */ }
+  }
+  return map;
+}
+// Recent sessions from both tools and every Claude profile, newest first.
+function listSessions({ home = os.homedir(), limit = 150, platform = process.platform, env = process.env } = {}) {
+  const claude = claudeProfiles(home, env).flatMap((p) =>
+    walk(path.join(p.dir, "projects"), 1, (n) => n.endsWith(".jsonl"), []).map((f) => ({ file: f, harness: "claude-code", profile: p.profile })));
+  const codex = walk(path.join(home, ".codex", "sessions"), 3, (n) => /^rollout-.*\.jsonl$/.test(n), []).map((f) => ({ file: f, harness: "codex", profile: "" }));
+  const index = desktopIndex(home, platform, env);
   return [...claude, ...codex]
     .map((s) => { try { const st = fs.statSync(s.file); return { ...s, mtime: st.mtimeMs, size: st.size }; } catch { return null; } })
     .filter((s) => s && s.size > 0)
     .sort((a, b) => b.mtime - a.mtime)
     .slice(0, limit)
-    .map((s) => { const f = firstPrompt(s.file, s.harness); return { ...s, prompt: f.prompt, spawned: !!f.spawned, cwd: f.cwd || cwdOf(s.file, s.harness) }; });
+    .map((s) => {
+      const f = firstPrompt(s.file, s.harness);
+      const ix = s.harness === "claude-code" ? index.get(path.basename(s.file, ".jsonl")) : null;
+      return { ...s, prompt: f.prompt, spawned: !!f.spawned, cwd: f.cwd || cwdOf(s.file, s.harness), title: ix ? ix.title : "", remote: !!(ix && ix.remote) };
+    });
 }
 
 /* ---------------- facts checked against the disk now ---------------- */
@@ -276,7 +310,8 @@ function contextFiles(d, home) {
   if (d.cwd) for (const n of ["CLAUDE.md", "AGENTS.md", "HANDOFF.md", "README.md"]) add(path.join(d.cwd, n), n === "README.md" ? "project readme" : "project instructions / notes");
   if (d.harness === "claude-code") {
     add(path.join(path.dirname(d.source), "memory", "MEMORY.md"), "auto memory for this project");
-    add(path.join(home, ".claude", "CLAUDE.md"), "user-wide instructions");
+    // The record sits in <profile>/projects/<project>/; that profile's own CLAUDE.md applies (~/.claude, ~/.claude-b, …).
+    add(path.join(path.dirname(path.dirname(path.dirname(d.source))), "CLAUDE.md"), "user-wide instructions");
   }
   if (d.harness === "codex") add(path.join(home, ".codex", "AGENTS.md"), "user-wide instructions");
   return out;

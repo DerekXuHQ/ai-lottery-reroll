@@ -62,7 +62,7 @@ No app needed: the kit itself is in [`kit/en/`](kit/en/) (Chinese: [`kit/zh/`](k
 | `/canary` | The AI answers in text only | Runs no commands; creates, modifies, deletes no files |
 | `/handoff` | Read-only git commands; writes one `HANDOFF.md` | Asks before touching a same-name file in another format; never commits |
 | `/pickup` | Reads `HANDOFF.md`; read-only git commands | Changes nothing until you confirm |
-| App: Relay | Reads session records under `~/.claude/projects` and `~/.codex/sessions`; writes one new `<project>/.relay/<time>/` folder | Read-only; secrets redacted before writing; `.relay` is git-ignored; runs no programs |
+| App: Relay | Reads session records under `~/.claude/projects` (and other Claude profiles such as `~/.claude-b`), `~/.codex/sessions`, and the Claude desktop app's session titles; writes one new `<project>/.relay/<time>/` folder | Read-only; secrets redacted before writing; `.relay` is git-ignored; runs no programs |
 | `/relay-in` | Reads the package; read-only git commands; writes one `HANDOFF.md` | Distills in a subagent when it can; checks with git, or file size and time without git; changes nothing until you confirm |
 | App: Install | Writes only the skill folders under `~/.claude/skills/` | Shows the plan first; existing same-name skills move to `~/.claude/skills-backup/<time>/`; never deletes |
 | App: Export | Creates a new subfolder where you choose | Never overwrites |

@@ -55,6 +55,16 @@ const STR = {
     "relay.s2k": "2 · NEW SESSION", "relay.s2t": "Settle", "relay.s2p": "Open a fresh session and type <code>/relay-in</code>. It distills the package into a one-page <code>HANDOFF.md</code> (in a subagent when it can) and checks it: with git where there is git, by file size and time where there isn't.",
     "relay.s3k": "3 · YOU", "relay.s3t": "Confirm", "relay.s3p": "It shows you the goal and a checklist of at most 10 items. Tick, strike or edit; your edits win. Only then does it start working.",
     "relay.pickTitle": "Sessions on this computer", "relay.refresh": "Refresh", "relay.file": "Choose a record file…",
+    "relay.search": "Filter by title, folder or first message",
+    "relay.remote": "Remote Control",
+    "relay.profile": "Account",
+    "relay.noMatch": "No session matches.",
+    "relay.cloudTitle": "Session not on this computer?",
+    "relay.cloudLede": "Cloud sessions (claude.ai/code in the cloud, Codex cloud tasks) and sessions on another computer keep no record here. Remote Control sessions do: they run on this computer and are in the list above, with the same title as on the web. For the rest, the old session packs its own work. It sees less than this app does (compacted messages are only summarized), so the package says so and the new session checks more.",
+    "relay.cloud1": "Copy the prompt below and send it <b>in the old session</b>.",
+    "relay.cloud2": "It writes <code>.relay/&lt;time&gt;/RELAY.md</code> in the project (a cloud session commits and pushes it). If it can't write files, save its code block there yourself.",
+    "relay.cloud3": "Open a <b>fresh session</b> in the same project (same branch) and type <code>/relay-in</code>.",
+    "relay.cloudPrompt": "Package this session's work as a relay package for a fresh session. Rules:\n- Do only this. Don't continue the task, don't change other files, don't run tests or builds.\n- If you are not sure of something, write \"unsure\". Don't fill gaps or guess.\n- Write passwords, keys and tokens as [hidden].\n\nWrite it to .relay/<now as YYYY-MM-DDTHH-MM>/RELAY.md in the project root. In a cloud session, commit and push it to the current branch. If you can't write files, give me the whole file in one code block.\n\n# RELAY — <the task in one line>  (written by the old session itself: lower trust than an app extract)\n## 1 Source\nTool, session id if known, project folder, branch, start time and now.\n## 2 What the user said (verbatim)\nEvery message I sent, in order, word for word where you can still see it. Where early messages were compacted and you can't see the original, write \"(compacted, summary follows)\" and summarize. Put ★ before rules, corrections and preferences. Number each [#n].\n## 3 Files the session touched\nPath · read/written · exists now.\n## 4 Commands\nCommands that failed; the last 10 commands.\n## 5 Links\n## 6 Version baseline\nGit repository, branch, current commit (run git rev-parse HEAD for the real value). For files outside git: size and modified time.\n## 7 Context files to read\nCLAUDE.md, AGENTS.md, memory files, with paths.\n## 8 Where I think we are (low trust)\nDone / in progress / stuck / next, each with what it is based on.\n\nThen reply with only: the package path (or the code block), and how many items in section 2 are verbatim vs summarized.",
     "relay.loading": "Reading session records…", "relay.listFailed": "Could not read session records: ",
     "relay.empty": "No Claude Code or Codex sessions found on this computer. ChatGPT and other web chats keep no record here: use the chat prompts on the \"Kit & files\" page.",
     "relay.spawned": "started by another session", "relay.noText": "(no text message)", "relay.picked": "Chosen record file", "relay.justNow": "just now",
@@ -116,6 +126,16 @@ const STR = {
     "relay.s2k": "2 · 新会话", "relay.s2t": "接收", "relay.s2p": "开一个新会话，输入 <code>/relay-in</code>。它把接力包提炼成一页 <code>HANDOFF.md</code>（能用子代理就用子代理），再核对：有 git 用 git，没有 git 就比文件大小和修改时间。",
     "relay.s3k": "3 · 你", "relay.s3t": "确认", "relay.s3p": "它给你看一句话目标和不超过 10 行的清单。你打勾、划掉或修改，以你为准，然后它才开始干活。",
     "relay.pickTitle": "这台电脑上的会话", "relay.refresh": "刷新", "relay.file": "选择记录文件…",
+    "relay.search": "按标题、文件夹或第一句话筛选",
+    "relay.remote": "远程控制",
+    "relay.profile": "账号",
+    "relay.noMatch": "没有符合的会话。",
+    "relay.cloudTitle": "会话不在这台电脑上？",
+    "relay.cloudLede": "云端会话（claude.ai/code 的云端会话、Codex 云端任务）和别的电脑上的会话，本机没有记录。远程控制会话是有的：它们就在这台电脑上运行，在上面的列表里，标题和网页上一样。其余的，让旧会话自己打包。它看到的比本应用少（被压缩的消息只能概括），所以包里会注明，新会话会多核对一步。",
+    "relay.cloud1": "复制下面的提示词，<b>发给旧会话</b>。",
+    "relay.cloud2": "它会在项目里写出 <code>.relay/&lt;时间&gt;/RELAY.md</code>（云端会话会提交并推送）。写不了文件的，把它给的代码块自己存到这个位置。",
+    "relay.cloud3": "在同一个项目（同一个分支）里开一个<b>新会话</b>，输入 <code>/relay-in</code>。",
+    "relay.cloudPrompt": "把这个会话的工作整理成接力包，交给一个新会话接着做。规则：\n- 只做这一件事：不要继续原来的任务，不改别的文件，不跑测试和构建。\n- 拿不准的写「不确定」，不要补全，也不要猜。\n- 密码、密钥、令牌一律写成 [已隐藏]。\n\n写到项目根目录的 .relay/<当前时间，格式 YYYY-MM-DDTHH-MM>/RELAY.md。云端会话写完后提交并推送到当前分支；写不了文件，就把全文放进一个代码块发给我。\n\n# RELAY — <一句话说清任务>（由旧会话自己整理，可信度低于本机提取）\n## 1 来源\n工具、会话 id（知道的话）、项目文件夹、分支、开始时间和现在时间。\n## 2 用户说过的话（原文）\n按顺序列出我发过的每一条消息，还能看到原文的逐字照抄；早期内容已被压缩、看不到原文的，写「（已压缩，以下为概括）」再概括。规则、纠正、偏好前面加 ★。每条编号 [#n]。\n## 3 碰过的文件\n路径 · 读还是写 · 现在还在不在。\n## 4 命令\n失败过的命令；最后 10 条命令。\n## 5 链接\n## 6 版本基线\ngit 仓库、分支、当前提交号（运行 git rev-parse HEAD 取真实值）。不在 git 里的文件写大小和修改时间。\n## 7 要读的上下文文件\nCLAUDE.md、AGENTS.md、记忆文件等，写路径。\n## 8 我以为的进度（低可信）\n做完了什么、正在做什么、卡在哪、下一步，每条写明依据。\n\n最后只回复：包的路径（或代码块），以及第 2 节里逐字的有几条、概括的有几条。",
     "relay.loading": "正在读取会话记录…", "relay.listFailed": "读不了会话记录：",
     "relay.empty": "这台电脑上没有找到 Claude Code 或 Codex 的会话。ChatGPT 等网页版不在本机留记录，请用「工具与文件」页的通用版提示词。",
     "relay.spawned": "由其他会话启动", "relay.noText": "（没有文字消息）", "relay.picked": "手动选择的记录文件", "relay.justNow": "刚刚",
@@ -199,6 +219,8 @@ function applyLang() {
   $$("[data-i18n]").forEach((el) => { el.textContent = t(el.dataset.i18n); });
   $$("[data-i18n-html]").forEach((el) => { el.innerHTML = t(el.dataset.i18nHtml); });
   $$("[data-i18n-label]").forEach((el) => el.setAttribute("aria-label", t(el.dataset.i18nLabel)));
+  $$("[data-i18n-ph]").forEach((el) => el.setAttribute("placeholder", t(el.dataset.i18nPh)));
+  $("#relay-cloud-prompt").textContent = t("relay.cloudPrompt");
   $("#lang-toggle").textContent = t("lang.switch");
   buildQuestions();
   $("#plan").replaceChildren();
@@ -392,12 +414,21 @@ function renderRelayList() {
   const box = $("#relay-list");
   if (!relayRows) return;
   if (!relayRows.length) { box.replaceChildren(h("p", { className: "muted", textContent: t("relay.empty") })); return; }
-  box.replaceChildren(...relayRows.map((r) => {
+  // Search covers the web title (from the desktop app), folder, first message and profile.
+  const q = ($("#relay-search").value || "").trim().toLowerCase();
+  const rows = q ? relayRows.filter((r) => [r.title, r.cwd, r.prompt, r.profile].some((x) => x && x.toLowerCase().includes(q))) : relayRows;
+  if (!rows.length) { box.replaceChildren(h("p", { className: "muted", textContent: t("relay.noMatch") })); return; }
+  box.replaceChildren(...rows.map((r) => {
+    const name = r.title || (r.cwd ? tail(r.cwd) : r.file.split(/[\\/]/).pop());
+    const said = r.picked ? t("relay.picked") : r.prompt || (r.spawned ? t("relay.spawned") : t("relay.noText"));
     const b = h("button", { className: "sess" + (relayCurrent === r.file ? " on" : "") },
-      h("span", { className: "pill " + (r.harness === "codex" ? "mid" : "good"), textContent: TOOL[r.harness] }),
+      h("span", { className: "sess-tags" },
+        h("span", { className: "pill " + (r.harness === "codex" ? "mid" : "good"), textContent: TOOL[r.harness] }),
+        r.remote ? h("span", { className: "pill neutral", textContent: t("relay.remote") }) : null,
+        r.profile ? h("span", { className: "pill neutral", textContent: t("relay.profile") + " " + r.profile.toUpperCase() }) : null),
       h("span", { className: "sess-main" },
-        h("b", { textContent: r.cwd ? tail(r.cwd) : r.file.split(/[\\/]/).pop() }),
-        h("span", { className: "muted", textContent: r.picked ? t("relay.picked") : r.prompt || (r.spawned ? t("relay.spawned") : t("relay.noText")) })),
+        h("b", { textContent: name }),
+        h("span", { className: "muted", textContent: r.title && r.cwd ? tail(r.cwd) + " · " + said : said })),
       h("span", { className: "sess-meta muted", textContent: ago(r.mtime) + (r.size ? " · " + mb(r.size) : "") }));
     b.setAttribute("role", "listitem");
     b.title = (r.prompt && !r.picked ? r.prompt + "\n" : "") + r.file;
@@ -469,6 +500,7 @@ async function previewRelay(file) {
   other.addEventListener("click", () => write(true));
 }
 $("#relay-refresh").addEventListener("click", loadRelay);
+$("#relay-search").addEventListener("input", renderRelayList);
 $("#relay-file").addEventListener("click", async () => {
   const f = await api.relayPick(lang);
   if (f) { relayRows = [{ file: f, harness: /rollout-/.test(f) ? "codex" : "claude-code", cwd: null, prompt: "", picked: true, mtime: Date.now(), size: 0 }, ...(relayRows || []).filter((r) => r.file !== f)]; previewRelay(f); }

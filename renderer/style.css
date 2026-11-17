@@ -206,3 +206,10 @@ pre{margin:0;background:var(--code-bg);color:var(--code-fg);font:12px/1.6 var(--
 .cmd-row pre{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
 @media (max-width:900px){.sess{grid-template-columns:auto 1fr}.sess-main{grid-column:1/-1;grid-row:2}.sess-meta{justify-self:end}}
 
+/* relay: tag column, search box, cloud steps */
+.sess-tags{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+.search{display:block;width:100%;box-sizing:border-box;margin:0;padding:8px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:inherit;user-select:text}
+.search:focus{outline:2px solid var(--accent);outline-offset:1px}
+.steps-mini{margin:4px 0 12px;padding-left:22px;line-height:1.7}
+#relay-cloud-prompt{max-height:260px;overflow:auto;white-space:pre-wrap}
+@media (max-width:900px){.sess-tags{flex-direction:row;flex-wrap:wrap}}

@@ -301,9 +301,16 @@
     </div>
     <div class="panel">
       <div class="panel-head"><h3 data-i18n="relay.pickTitle"></h3><div class="row-actions"><button class="small" id="relay-refresh" data-i18n="relay.refresh"></button><button class="small" id="relay-file" data-i18n="relay.file"></button></div></div>
+      <input type="search" id="relay-search" class="search" data-i18n-label="relay.search" data-i18n-ph="relay.search">
       <div id="relay-list" class="sessions" role="list"></div>
     </div>
     <div class="panel" id="relay-result" hidden></div>
+    <div class="panel">
+      <h3 data-i18n="relay.cloudTitle"></h3>
+      <p data-i18n-html="relay.cloudLede"></p>
+      <ol class="steps-mini"><li data-i18n-html="relay.cloud1"></li><li data-i18n-html="relay.cloud2"></li><li data-i18n-html="relay.cloud3"></li></ol>
+      <div class="cmd-row"><pre class="file" id="relay-cloud-prompt"></pre><button class="small" data-copy="relay-cloud-prompt" data-i18n="copy.btn"></button></div>
+    </div>
     <div class="panel">
       <h3 data-i18n="relay.whyTitle"></h3>
       <div data-i18n-html="relay.why"></div>

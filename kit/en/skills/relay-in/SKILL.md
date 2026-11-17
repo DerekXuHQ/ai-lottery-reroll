@@ -12,13 +12,15 @@ You are a fresh session taking over work from a session that went dumb. The Rero
 
 ## 1. Find the package
 
-The newest folder in `.relay/` (in the project root, or the folder the user names). It holds `RELAY.md` and `relay.json`. If there is none, tell the user to make one in the Reroll app (Relay page) and stop.
+The newest folder in `.relay/` (in the project root, or the folder the user names). It holds `RELAY.md`, and `relay.json` when the Reroll app made it. If there is none, tell the user to make one in the Reroll app (Relay page), or, for a cloud session, with the copy-paste prompt on that page, and stop.
+
+No `relay.json` and a title that says the old session wrote it itself: the package is **lower trust**. Section 2 may be paraphrased where the old session no longer saw the original. Treat every quote as "probably the user's words", check sections 3–6 against git and the files, and list in step 4 any user rule that rests only on this package.
 
 ## 2. Distill — in a subagent if you can
 
 If you can start a subagent (for example the Task / Agent tool), give it steps 2a–2b and ask it to return **only** the finished HANDOFF.md text. Then write that text to `HANDOFF.md` yourself. This keeps the raw record out of your context: that is the point of a fresh session. If you can't, do it yourself.
 
-2a. Read all of `RELAY.md`. Trust order: the user's words (section 2) and the facts (sections 3–6) come first; section 8 was written by the session that went dumb — use it as a map and check every claim.
+2a. Read all of `RELAY.md`. Trust order: the user's words (section 2) and the facts (sections 3–6) come first; section 8 was written by the session that went dumb — use it as a map and check every claim. In a self-written package the whole file came from that session, so the same caution applies to sections 2–7.
 
 2b. Write `HANDOFF.md` (if one exists and its first line does not start with `# HANDOFF —`, it is the user's own file: stop and ask). Cite every item: `[#n]` for a user message, or a file path.
 
